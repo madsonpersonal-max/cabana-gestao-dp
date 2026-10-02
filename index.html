@@ -33,13 +33,13 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 </head>
 <body>
 <div class="login" id="login"><div class="loginbox">
-<h1 style="color:var(--g)">Cabana Gestão V2.2</h1><p class="sub">Homologação visual — DP / RH / Documentos</p>
+<h1 style="color:var(--g)">Cabana Gestão V2.3</h1><p class="sub">Homologação visual — DP / RH / Documentos</p>
 <div class="field"><label>Usuário</label><input value="admin"/></div>
 <div class="field"><label>Senha</label><input type="password" value="trocar123"/></div>
 <button class="btn" onclick="login()">Entrar</button>
 <p class="small">Demonstração HTML. A versão real utiliza backend + PostgreSQL.</p>
 </div></div>
-<aside class="side"><div class="logo"><span>Cabana Gestão</span><small>V2.2 · DP / RH / Documentos</small></div>
+<aside class="side"><div class="logo"><span>Cabana Gestão</span><small>V2.3 · DP / RH / Documentos</small></div>
 <nav class="nav">
 <button onclick="show('dashboard',this)">▣ <span class="txt">Dashboard</span></button>
 <button onclick="show('fechamento',this)">▤ <span class="txt">Fechamento DP</span></button>
@@ -80,7 +80,9 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 
 <div class="page" id="aso"><h1>ASO / Saúde ocupacional</h1><p class="sub">Controle restrito de exames ocupacionais. O colaborador é selecionado diretamente da base de Colaboradores 360°.</p><div class="panel"><div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b>Base de colaboradores</b><div class="small">Os ASOs ficam vinculados ao código do colaborador. Não é necessário recadastrar o funcionário.</div></div><button class="btn" onclick="openModal('novoAso')">+ Novo ASO</button></div><div id="asoTableWrap" style="margin-top:15px"></div></div></div>
 <div class="page" id="vacations"><h1>Férias / Afastamentos</h1><p class="sub">Programação, períodos, afastamentos e evidências. O colaborador é selecionado diretamente da base de Colaboradores 360°.</p><div class="panel"><div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b>Base de colaboradores</b><div class="small">Os lançamentos ficam vinculados ao código do colaborador. Não é necessário recadastrar o funcionário.</div></div><button class="btn" onclick="openModal('novoFerias')">+ Novo lançamento</button></div><div id="vacationTableWrap" style="margin-top:15px"></div></div></div>
-<div class="page" id="documents"><h1>Documentos obrigatórios</h1><p class="sub">Cadastro, validade, responsável e histórico de versões.</p><div class="panel"><button class="btn" onclick="openModal('novoDoc')">+ Novo documento</button><table style="margin-top:15px"><tr><th>Documento</th><th>Categoria</th><th>Validade</th><th>Responsável</th><th>Status</th></tr><tr><td>AVCB/CLCB</td><td>Segurança</td><td>05/09/2026</td><td>Infraestrutura</td><td><span class="tag bad">Vencido</span></td></tr><tr><td>Licença Sanitária</td><td>Sanitária</td><td>15/12/2026</td><td>Gerência</td><td><span class="tag ok">Válido</span></td></tr></table></div></div>
+<div class="page" id="documents"><h1>Documentos</h1><p class="sub">Documentos dos colaboradores e documentos institucionais, separados para evitar duplicidade de cadastro.</p>
+<div class="panel"><div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><h3 style="margin:0">Documentos dos colaboradores</h3><div class="small">Vinculados ao código do colaborador e consultáveis no Colaborador 360°.</div></div><button class="btn" onclick="openModal('novoDocColaborador')">+ Novo documento</button></div><div id="employeeDocsWrap" style="margin-top:15px"></div></div>
+<div class="panel" style="margin-top:15px"><div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><h3 style="margin:0">Documentos institucionais obrigatórios</h3><div class="small">Licenças, AVCB/CLCB, certificados, seguros e demais documentos do clube.</div></div><button class="btn" onclick="openModal('novoDoc')">+ Novo documento institucional</button></div><table style="margin-top:15px"><tr><th>Documento</th><th>Categoria</th><th>Validade</th><th>Responsável</th><th>Status</th></tr><tr><td>AVCB/CLCB</td><td>Segurança</td><td>05/09/2026</td><td>Infraestrutura</td><td><span class="tag bad">Vencido</span></td></tr><tr><td>Licença Sanitária</td><td>Sanitária</td><td>15/12/2026</td><td>Gerência</td><td><span class="tag ok">Válido</span></td></tr></table></div></div>
 <div class="page" id="fiscal"><h1>Modo Fiscalização</h1><p class="sub">Acesso rápido aos documentos institucionais.</p><div class="grid3"><div class="card"><b>AVCB/CLCB</b><p><span class="tag bad">VENCIDO</span></p><button class="btn">Abrir PDF</button></div><div class="card"><b>Licença Sanitária</b><p><span class="tag ok">VÁLIDO</span></p><button class="btn">Abrir PDF</button></div><div class="card"><b>Seguro</b><p><span class="tag warning">30 DIAS</span></p><button class="btn">Abrir PDF</button></div></div></div>
 <div class="page" id="reports"><h1>Relatórios</h1><p class="sub">Indicadores calculados a partir da base dos 91 colaboradores importados.</p><div class="grid"><div class="panel"><h3>Colaboradores por setor</h3><table><thead><tr><th>Setor</th><th>Total</th></tr></thead><tbody id="reportDeptBody"></tbody></table></div><div class="panel"><h3>Status</h3><table><thead><tr><th>Status</th><th>Total</th></tr></thead><tbody id="reportStatusBody"></tbody></table></div></div></div>
 <div class="page" id="audit"><h1>Auditoria</h1><p class="sub">Registro das operações críticas.</p><div class="panel"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Registro</th></tr><tr><td>17/09/2026 14:30</td><td>admin</td><td>Atualização</td><td>Checklist DP 09/2026</td></tr><tr><td>17/09/2026 14:10</td><td>dp</td><td>Upload</td><td>Comprovante de folha</td></tr><tr><td>16/09/2026 17:40</td><td>gerencia</td><td>Aprovação</td><td>Competência 08/2026</td></tr></table></div></div>
@@ -118,6 +120,7 @@ function updateClosingFlow(){const dp=done.filter(Boolean).length;const dpPct=Ma
 function openModal(type){let b=document.getElementById('modalBody'),t=document.getElementById('modalTitle'),html='';
 if(type==='novoFunc'){t.textContent='Novo funcionário';html='<div class="field"><label>Nome completo</label><input placeholder="Nome"></div><div class="field"><label>CPF</label><input placeholder="CPF"></div><div class="field"><label>Setor</label><input placeholder="Setor"></div><div class="field"><label>Cargo</label><input placeholder="Cargo"></div><button class="btn" onclick="saveModal(\'Funcionário cadastrado com sucesso.\')">Salvar funcionário</button>'}
 if(type==='novoDoc'){t.textContent='Novo documento institucional';html='<div class="field"><label>Nome</label><input placeholder="Ex.: Licença de Funcionamento"></div><div class="field"><label>Categoria</label><select><option>Municipal</option><option>Segurança</option><option>Sanitária</option><option>Ambiental</option><option>Trabalhista</option></select></div><div class="field"><label>Validade</label><input type="date"></div><div class="field"><label>Responsável</label><input></div><div class="field"><label>Arquivo</label><input type="file"></div><button class="btn" onclick="saveModal(\'Documento cadastrado com sucesso.\')">Salvar documento</button>'}
+if(type==='novoDocColaborador'){t.textContent='Novo documento do colaborador';html='<div class="field"><label>Colaborador</label><select id="docEmployeeSelect" class="input"><option value="">Selecione um colaborador da base...</option></select><div class="small" style="margin-top:5px">Fonte: Colaboradores 360° — 91 colaboradores importados.</div></div><div class="field"><label>Tipo de documento</label><select id="docTipo"><option>RG</option><option>CPF</option><option>CTPS</option><option>Contrato de trabalho</option><option>Ficha de registro</option><option>Comprovante de residência</option><option>Certificado / curso</option><option>Advertência</option><option>Outros</option></select></div><div class="field"><label>Data do documento</label><input id="docData" type="date"></div><div class="field"><label>Validade</label><input id="docValidade" type="date"><div class="small">Deixe em branco quando o documento não tiver validade.</div></div><div class="field"><label>Observação</label><textarea id="docObs" class="input" rows="3"></textarea></div><div class="field"><label>Arquivo</label><input id="docArquivo" type="file" accept=".pdf,.jpg,.jpeg,.png"></div><button class="btn" onclick="saveDocColaborador()">Salvar documento</button>'}
 if(type==='novoAso'){t.textContent='Novo ASO';html='<div class="field"><label>Colaborador</label><select id="asoEmployeeSelect" class="input"><option value="">Selecione um colaborador da base...</option></select><div class="small" style="margin-top:5px">Fonte: Colaboradores 360° — 91 colaboradores importados.</div></div><div class="field"><label>Tipo</label><select id="asoTipo"><option>Admissional</option><option>Periódico</option><option>Demissional</option><option>Retorno</option><option>Mudança de risco</option></select></div><div class="field"><label>Data do exame</label><input id="asoData" type="date"></div><div class="field"><label>Vencimento</label><input id="asoVencimento" type="date"></div><div class="field"><label>Arquivo do ASO</label><input id="asoArquivo" type="file" accept=".pdf,.jpg,.jpeg,.png"></div><button class="btn" onclick="saveAso()">Salvar ASO</button>';setTimeout(populateAsoEmployeeSelect,0)}
 if(type==='novoFerias'){t.textContent='Novo lançamento';html='<div class="field"><label>Colaborador</label><select id="feriasEmployeeSelect" class="input"><option value="">Selecione um colaborador da base...</option></select><div class="small" style="margin-top:5px">Fonte: Colaboradores 360° — 91 colaboradores importados.</div></div><div class="field"><label>Tipo</label><select id="feriasTipo"><option>Férias</option><option>Afastamento</option></select></div><div class="field"><label>Início</label><input id="feriasInicio" type="date"></div><div class="field"><label>Fim</label><input id="feriasFim" type="date"></div><div class="field"><label>Situação</label><select id="feriasStatus"><option>Programado</option><option>Em andamento</option><option>Encerrado</option><option>Cancelado</option></select></div><div class="field"><label>Período aquisitivo / referência</label><input id="feriasPeriodo" placeholder="Ex.: 01/10/2025 a 30/09/2026"></div><div class="field"><label>Observação</label><textarea id="feriasObs" class="input" rows="3" placeholder="Observações do lançamento"></textarea></div><div class="field"><label>Documento / evidência</label><input id="feriasArquivo" type="file" accept=".pdf,.jpg,.jpeg,.png"></div><button class="btn" onclick="saveFerias()">Salvar lançamento</button>';setTimeout(populateFeriasEmployeeSelect,0)}
 if(type==='novoUser'){t.textContent='Novo usuário';html='<div class="field"><label>Nome</label><input></div><div class="field"><label>Usuário</label><input></div><div class="field"><label>Perfil</label><select><option>DP</option><option>Financeiro</option><option>Gerência</option><option>Admin TI</option></select></div><button class="btn" onclick="saveModal(\'Usuário criado com sucesso.\')">Salvar usuário</button>'}
@@ -169,6 +172,7 @@ document.addEventListener('DOMContentLoaded',function(){
   renderFinance();
   updateClosingFlow();
   updateDashboardAndReports();
+  renderDocColaboradores();
 });
 
 function getEmployeeRows(){return [...document.querySelectorAll('#empTable tbody tr')];}
@@ -229,7 +233,7 @@ function openEmployee(name, dept, role, adm, code) {
     <h3>Colaborador 360°</h3>
     <p class="small">Central de informações do colaborador. Nesta homologação, o cadastro é visual; na versão com PostgreSQL, os registros ficarão vinculados ao histórico individual.</p>
     <div class="grid2">
-      <div class="panel"><b>Documentos</b><br><span class="small">Documentos pessoais, contratuais e comprovantes.</span><br><br><button class="btn" onclick="openModal('novoDoc')">+ Documento</button></div>
+      <div class="panel"><b>Documentos</b><br><span class="small">Documentos pessoais, contratuais e comprovantes.</span><br><br><button class="btn" onclick="openModal('novoDocColaborador')">+ Documento</button></div>
       <div class="panel"><b>ASO</b><br><span class="small">Exames ocupacionais e validade.</span><br><br><button class="btn" onclick="openModal('novoAso')">+ ASO</button></div>
       <div class="panel"><b>Férias / Afastamentos</b><br><span class="small">Períodos, afastamentos e evidências.</span><br><br><button class="btn" onclick="openModal('novoFerias')">+ Lançamento</button></div>
       <div class="panel"><b>Histórico</b><br><span class="small">Alterações cadastrais, movimentações e auditoria.</span></div>
@@ -276,6 +280,36 @@ function saveFerias(){
   saveFeriasRecords(records);closeModal();renderFerias();alert('LANÇAMENTO REGISTRADO\n\nColaborador: '+emp.name+'\nCódigo: '+emp.code);
 }
 
+// ===== DOCUMENTOS DOS COLABORADORES vinculados à base única =====
+function getDocColaboradorRecords(){try{const v=JSON.parse(localStorage.getItem('cabana_doc_colaborador_v22')||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+function saveDocColaboradorRecords(v){localStorage.setItem('cabana_doc_colaborador_v22',JSON.stringify(v))}
+function populateDocEmployeeSelect(){
+  const sel=document.getElementById('docEmployeeSelect');if(!sel)return;
+  const employees=getEmployeesFromBase();
+  sel.innerHTML='<option value="">Selecione um colaborador da base...</option>'+employees.map(e=>'<option value="'+escapeHtml(e.code)+'">'+escapeHtml(e.code)+' — '+escapeHtml(e.name)+' — '+escapeHtml(e.dept)+'</option>').join('');
+  if(window.currentEmployee360?.code)sel.value=window.currentEmployee360.code;
+}
+function renderDocColaboradores(){
+  const wrap=document.getElementById('employeeDocsWrap');if(!wrap)return;
+  const records=getDocColaboradorRecords();
+  if(!records.length){wrap.innerHTML='<div class="notice">Nenhum documento de colaborador cadastrado ainda. Use <b>+ Novo documento</b> ou cadastre pela ficha 360°.</div>';return}
+  wrap.innerHTML='<div style="overflow:auto"><table><thead><tr><th>Colaborador</th><th>Código</th><th>Documento</th><th>Data</th><th>Validade</th><th>Arquivo</th></tr></thead><tbody>'+records.map(r=>'<tr><td><b>'+escapeHtml(r.name)+'</b><div class="small">'+escapeHtml(r.dept||'')+'</div></td><td>'+escapeHtml(r.code)+'</td><td>'+escapeHtml(r.tipo)+'</td><td>'+formatDateBR(r.data)+'</td><td>'+formatDateBR(r.validade)+'</td><td>'+(r.file?escapeHtml(r.file):'—')+'</td></tr>').join('')+'</tbody></table></div>'
+}
+function saveDocColaborador(){
+  const code=document.getElementById('docEmployeeSelect')?.value||'';
+  const emp=getEmployeesFromBase().find(e=>e.code===code);
+  const tipo=document.getElementById('docTipo')?.value||'';
+  const data=document.getElementById('docData')?.value||'';
+  const validade=document.getElementById('docValidade')?.value||'';
+  const obs=document.getElementById('docObs')?.value||'';
+  const fileInput=document.getElementById('docArquivo');
+  if(!emp){alert('DOCUMENTO BLOQUEADO\n\nSelecione um colaborador da base de Colaboradores 360°.');return}
+  if(!tipo){alert('DOCUMENTO BLOQUEADO\n\nInforme o tipo de documento.');return}
+  if(validade&&data&&validade<data){alert('DOCUMENTO BLOQUEADO\n\nA validade não pode ser anterior à data do documento.');return}
+  const records=getDocColaboradorRecords();
+  records.push({id:Date.now(),code:emp.code,name:emp.name,dept:emp.dept,role:emp.role,tipo,data,validade,obs,file:fileInput?.files?.[0]?.name||''});
+  saveDocColaboradorRecords(records);closeModal();renderDocColaboradores();alert('DOCUMENTO REGISTRADO\n\nColaborador: '+emp.name+'\nCódigo: '+emp.code);
+}
 // ===== ASO vinculado à base única de colaboradores =====
 function getEmployeesFromBase(){
   return [...document.querySelectorAll('#empTable tbody tr')].map(tr=>{
@@ -320,4 +354,5 @@ function saveAso(){
 document.addEventListener('DOMContentLoaded',populateEmployeeDepartments);
 renderAso();
 renderFerias();
+renderDocColaboradores();
 </script></body></html>
