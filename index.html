@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Cabana Gestão V2.2</title>
+<title>Cabana Gestão V2.4</title>
 <style>
 :root{--g:#465638;--g2:#344329;--bg:#f4f5f1;--card:#fff;--line:#dfe3d8;--txt:#20251d;--muted:#6d7569;--ok:#23734a;--warn:#a66d17;--bad:#a63d35}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px Arial,sans-serif}
@@ -219,29 +219,44 @@ function openEmployee(name, dept, role, adm, code) {
   const body=document.getElementById('modalBody');
   if(!title || !body){ alert('Erro ao abrir o Colaborador 360°.'); return; }
 
+  const docs=getDocColaboradorRecords().filter(r=>r.code===code);
+  const asos=getAsoRecords().filter(r=>r.code===code);
+  const ferias=getFeriasRecords().filter(r=>r.code===code);
+  const docHtml=docs.length
+    ? docs.map(r=>`<div class="small" style="padding:7px 0;border-bottom:1px solid #eee"><b>${escapeHtml(r.tipo)}</b> · ${formatDateBR(r.data)}${r.validade?' · validade '+formatDateBR(r.validade):''}${r.file?' · '+escapeHtml(r.file):''}</div>`).join('')
+    : '<div class="small">Nenhum documento cadastrado para este colaborador.</div>';
+  const asoHtml=asos.length
+    ? asos.map(r=>{const st=asoStatus(r.vencimento);return `<div class="small" style="padding:7px 0;border-bottom:1px solid #eee"><b>${escapeHtml(r.tipo)}</b> · exame ${formatDateBR(r.data)} · vencimento ${formatDateBR(r.vencimento)} · <span class="tag ${st.cls}">${st.label}</span>${r.file?' · '+escapeHtml(r.file):''}</div>`}).join('')
+    : '<div class="small">Nenhum ASO cadastrado para este colaborador.</div>';
+  const feriasHtml=ferias.length
+    ? ferias.map(r=>`<div class="small" style="padding:7px 0;border-bottom:1px solid #eee"><b>${escapeHtml(r.tipo)}</b> · ${formatDateBR(r.inicio)} a ${formatDateBR(r.fim)} · <span class="tag ${feriasStatusClass(r.status)}">${escapeHtml(r.status)}</span></div>`).join('')
+    : '<div class="small">Nenhum lançamento de férias/afastamento para este colaborador.</div>';
+
   title.textContent='Colaborador 360° — '+name;
   body.innerHTML=`
     <div class="grid2">
-      <div><b>Código</b><br>${code}</div>
+      <div><b>Código</b><br>${escapeHtml(code)}</div>
       <div><b>Status</b><br><span class="tag ok">Ativo</span></div>
-      <div><b>Nome</b><br>${name}</div>
-      <div><b>Departamento</b><br>${dept}</div>
-      <div><b>Cargo</b><br>${role}</div>
-      <div><b>Admissão</b><br>${adm}</div>
+      <div><b>Nome</b><br>${escapeHtml(name)}</div>
+      <div><b>Departamento</b><br>${escapeHtml(dept)}</div>
+      <div><b>Cargo</b><br>${escapeHtml(role)}</div>
+      <div><b>Admissão</b><br>${escapeHtml(adm)}</div>
     </div>
     <hr>
     <h3>Colaborador 360°</h3>
-    <p class="small">Central de informações do colaborador. Nesta homologação, o cadastro é visual; na versão com PostgreSQL, os registros ficarão vinculados ao histórico individual.</p>
+    <p class="small">Esta é a ficha central do colaborador. Os lançamentos feitos em Documentos, ASO e Férias/Afastamentos ficam vinculados ao mesmo código.</p>
     <div class="grid2">
-      <div class="panel"><b>Documentos</b><br><span class="small">Documentos pessoais, contratuais e comprovantes.</span><br><br><button class="btn" onclick="openModal('novoDocColaborador')">+ Documento</button></div>
-      <div class="panel"><b>ASO</b><br><span class="small">Exames ocupacionais e validade.</span><br><br><button class="btn" onclick="openModal('novoAso')">+ ASO</button></div>
-      <div class="panel"><b>Férias / Afastamentos</b><br><span class="small">Períodos, afastamentos e evidências.</span><br><br><button class="btn" onclick="openModal('novoFerias')">+ Lançamento</button></div>
-      <div class="panel"><b>Histórico</b><br><span class="small">Alterações cadastrais, movimentações e auditoria.</span></div>
+      <div class="panel"><b>Documentos</b><br><span class="small">${docs.length} registro(s) vinculado(s).</span><div style="margin-top:8px">${docHtml}</div><br><button class="btn" onclick="openModal('novoDocColaborador')">+ Documento</button></div>
+      <div class="panel"><b>ASO</b><br><span class="small">${asos.length} registro(s) vinculado(s).</span><div style="margin-top:8px">${asoHtml}</div><br><button class="btn" onclick="openModal('novoAso')">+ ASO</button></div>
+      <div class="panel"><b>Férias / Afastamentos</b><br><span class="small">${ferias.length} lançamento(s) vinculado(s).</span><div style="margin-top:8px">${feriasHtml}</div><br><button class="btn" onclick="openModal('novoFerias')">+ Lançamento</button></div>
+      <div class="panel"><b>Histórico</b><br><span class="small">Alterações cadastrais, movimentações e auditoria.</span><br><br><span class="tag ok">Base vinculada pelo código ${escapeHtml(code)}</span></div>
     </div>
     <hr>
     <h3>Timeline</h3>
-    <div class="timeline"><b>${adm}</b><span class="small">Admissão registrada</span></div>
-    <div class="timeline"><b>Hoje</b><span class="small">Colaborador ativo na base de homologação</span></div>
+    <div class="timeline"><b>${escapeHtml(adm)}</b><span class="small">Admissão registrada</span></div>
+    ${docs.map(r=>`<div class="timeline"><b>${formatDateBR(r.data)}</b><span class="small">Documento registrado: ${escapeHtml(r.tipo)}</span></div>`).join('')}
+    ${asos.map(r=>`<div class="timeline"><b>${formatDateBR(r.data)}</b><span class="small">ASO registrado: ${escapeHtml(r.tipo)}</span></div>`).join('')}
+    ${ferias.map(r=>`<div class="timeline"><b>${formatDateBR(r.inicio)}</b><span class="small">${escapeHtml(r.tipo)} programado/registrado até ${formatDateBR(r.fim)}</span></div>`).join('')}
   `;
   document.getElementById('modal').classList.add('show');
 }
