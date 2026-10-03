@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Cabana Gestão V2.4</title>
+<title>Cabana Gestão V2.5</title>
 <style>
 :root{--g:#465638;--g2:#344329;--bg:#f4f5f1;--card:#fff;--line:#dfe3d8;--txt:#20251d;--muted:#6d7569;--ok:#23734a;--warn:#a66d17;--bad:#a63d35}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px Arial,sans-serif}
@@ -33,13 +33,13 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1
 </head>
 <body>
 <div class="login" id="login"><div class="loginbox">
-<h1 style="color:var(--g)">Cabana Gestão V2.3</h1><p class="sub">Homologação visual — DP / RH / Documentos</p>
+<h1 style="color:var(--g)">Cabana Gestão V2.5</h1><p class="sub">Homologação visual — DP / RH / Documentos</p>
 <div class="field"><label>Usuário</label><input value="admin"/></div>
 <div class="field"><label>Senha</label><input type="password" value="trocar123"/></div>
 <button class="btn" onclick="login()">Entrar</button>
 <p class="small">Demonstração HTML. A versão real utiliza backend + PostgreSQL.</p>
 </div></div>
-<aside class="side"><div class="logo"><span>Cabana Gestão</span><small>V2.3 · DP / RH / Documentos</small></div>
+<aside class="side"><div class="logo"><span>Cabana Gestão</span><small>V2.5 · DP / RH / Documentos</small></div>
 <nav class="nav">
 <button onclick="show('dashboard',this)">▣ <span class="txt">Dashboard</span></button>
 <button onclick="show('fechamento',this)">▤ <span class="txt">Fechamento DP</span></button>
@@ -97,6 +97,7 @@ const financeItems=["Folha salarial","INSS","FGTS","IRRF","Encargos","Benefício
 let financeState=(()=>{try{const v=JSON.parse(localStorage.getItem('cabana_financeiro_v22')||'null');return Array.isArray(v)&&v.length===financeItems.length?v:financeItems.map(()=>({checked:false,value:'',evidence:false,file:''}))}catch(e){return financeItems.map(()=>({checked:false,value:'',evidence:false,file:''}))}})();
 let dpCompleted=done.every(Boolean);
 let financeCompleted=financeState.every(x=>x.checked&&x.evidence);
+let gerenciaApproved=localStorage.getItem('cabana_gerencia_aprovada_v22')==='true';
 let currentRole=localStorage.getItem('cabana_role_v22')||'admin';
 function canFinance(){return currentRole==='admin'||currentRole==='financeiro'}
 function canGerencia(){return currentRole==='admin'||currentRole==='gerencia'}
@@ -115,7 +116,9 @@ function setFinanceValue(i,v){financeState[i].value=v;localStorage.setItem('caba
 function setFinanceEvidence(i,input){if(input.files&&input.files[0]){financeState[i].evidence=true;financeState[i].file=input.files[0].name;saveFinance()}}
 function finishFinance(){if(!canFinance()){alert('ACESSO RESTRITO\n\nSomente Financeiro ou Administrador TI pode concluir a Conferência Financeira.');return}if(!dpCompleted){alert('CONFERÊNCIA BLOQUEADA\n\nO DP precisa concluir 100% primeiro.');return}const pending=financeItems.length-financeState.filter(x=>x.checked&&x.evidence).length;if(pending){alert('CONFERÊNCIA BLOQUEADA\n\nExistem '+pending+' itens financeiros pendentes ou sem comprovante.');return}financeCompleted=true;saveFinance();alert('CONFERÊNCIA FINANCEIRA CONCLUÍDA\n\nA competência foi encaminhada para a Gerência.');show('fechamento');}
 function showFinanceFromFlow(){if(!dpCompleted){alert('CONFERÊNCIA FINANCEIRA BLOQUEADA\n\nConclua 100% do checklist do DP primeiro.');return}if(!canFinance()){alert('ACESSO RESTRITO\n\nSomente Financeiro ou Administrador TI pode acessar a Conferência Financeira para execução.');return}show('financeiro')}
-function updateClosingFlow(){const dp=done.filter(Boolean).length;const dpPct=Math.round(dp/items.length*100);const fk=document.getElementById('fechamentoChecklistKpi');if(fk)fk.textContent=dpPct+'%';const fkp=document.getElementById('fechamentoFinanceiroKpi');if(fkp)fkp.textContent=Math.round(financeState.filter(x=>x.checked&&x.evidence).length/financeItems.length*100)+'%';const ds=document.getElementById('flowDpStatus');if(ds){ds.textContent=dpPct===100?'Concluído':'Em andamento';ds.className='tag '+(dpPct===100?'ok':'warning')}const fs=document.getElementById('flowFinStatus');const fb=document.getElementById('flowFinBtn');if(fs){fs.textContent=!dpCompleted?'Pendente':financeCompleted?'Concluído':'Em andamento';fs.className='tag '+(!dpCompleted?'':financeCompleted?'ok':'warning')}if(fb){fb.textContent=!dpCompleted?'Bloqueado':'Abrir';fb.disabled=!dpCompleted;fb.className='btn '+(dpCompleted?'':'alt')}const gh=document.getElementById('flowGerStatus');if(gh){gh.textContent=financeCompleted?'Pendente':'Pendente'}const hist=getHistoricoFechamentos();const r=hist['09/2026'];}
+function updateClosingFlow(){const dp=done.filter(Boolean).length;const dpPct=Math.round(dp/items.length*100);const finPct=Math.round(financeState.filter(x=>x.checked&&x.evidence).length/financeItems.length*100);const fk=document.getElementById('fechamentoChecklistKpi');if(fk)fk.textContent=dpPct+'%';const fkp=document.getElementById('fechamentoFinanceiroKpi');if(fkp)fkp.textContent=finPct+'%';const ds=document.getElementById('flowDpStatus');if(ds){ds.textContent=dpPct===100?'Concluído':'Em andamento';ds.className='tag '+(dpPct===100?'ok':'warning')}const fs=document.getElementById('flowFinStatus');const fb=document.getElementById('flowFinBtn');if(fs){fs.textContent=!dpCompleted?'Pendente':financeCompleted?'Concluído':'Em andamento';fs.className='tag '+(!dpCompleted?'':financeCompleted?'ok':'warning')}if(fb){fb.textContent=!dpCompleted?'Bloqueado':'Abrir';fb.disabled=!dpCompleted;fb.className='btn '+(dpCompleted?'':'alt')}const gh=document.getElementById('flowGerStatus');const ga=document.getElementById('flowGerAction');if(gh){gh.textContent=gerenciaApproved?'Aprovado':financeCompleted?'Pendente':'Bloqueado';gh.className='tag '+(gerenciaApproved?'ok':financeCompleted?'warning':'')}if(ga){if(gerenciaApproved){ga.innerHTML='<span class="tag ok">Aprovado</span>'}else if(financeCompleted&&canGerencia()){ga.innerHTML='<button class="btn" onclick="approveClosing()">Aprovar fechamento</button>'}else{ga.textContent=financeCompleted?'Disponível para Gerência':'Bloqueado'}}const ca=document.getElementById('flowCloseStatus');const cact=document.getElementById('flowCloseAction');if(ca){ca.textContent=gerenciaApproved?'Fechado':'Bloqueado';ca.className='tag '+(gerenciaApproved?'ok':'warning')}if(cact)cact.textContent=gerenciaApproved?'Concluído':'Somente após aprovação da Gerência';registrarHistoricoStatusSilencioso();}
+function approveClosing(){if(!canGerencia()){alert('ACESSO RESTRITO\n\nSomente Gerência ou Administrador TI pode aprovar o fechamento.');return}if(!financeCompleted){alert('APROVAÇÃO BLOQUEADA\n\nA Conferência Financeira precisa estar 100% concluída antes da aprovação da Gerência.');return}gerenciaApproved=true;localStorage.setItem('cabana_gerencia_aprovada_v22','true');const hist=getHistoricoFechamentos();hist['09/2026']={dp:100,financeiro:100,status:'Fechado',registradoEm:new Date().toLocaleString('pt-BR')};localStorage.setItem('cabana_fechamentos_v22',JSON.stringify(hist));updateClosingFlow();alert('FECHAMENTO APROVADO\n\nA competência 09/2026 foi aprovada pela Gerência e encerrada.');}
+function registrarHistoricoStatusSilencioso(){const hist=getHistoricoFechamentos();const dp=Math.round(done.filter(Boolean).length/items.length*100);const fin=Math.round(financeState.filter(x=>x.checked&&x.evidence).length/financeItems.length*100);const status=gerenciaApproved?'Fechado':financeCompleted?'Aguardando Gerência':dp===100?'Aguardando Financeiro':'Em andamento';const atual=hist['09/2026'];if(!atual||atual.status!==status||atual.dp!==dp||atual.financeiro!==fin){hist['09/2026']={dp,financeiro:fin,status,registradoEm:new Date().toLocaleString('pt-BR')};localStorage.setItem('cabana_fechamentos_v22',JSON.stringify(hist));}renderHistoricoFechamentos();}
 
 function openModal(type){let b=document.getElementById('modalBody'),t=document.getElementById('modalTitle'),html='';
 if(type==='novoFunc'){t.textContent='Novo funcionário';html='<div class="field"><label>Nome completo</label><input placeholder="Nome"></div><div class="field"><label>CPF</label><input placeholder="CPF"></div><div class="field"><label>Setor</label><input placeholder="Setor"></div><div class="field"><label>Cargo</label><input placeholder="Cargo"></div><button class="btn" onclick="saveModal(\'Funcionário cadastrado com sucesso.\')">Salvar funcionário</button>'}
@@ -156,7 +159,7 @@ function abrirCompetencia(comp){
 function registrarHistoricoAtual(){
   const hist=getHistoricoFechamentos();
   const dp=Math.round(done.filter(Boolean).length/items.length*100);
-  hist["09/2026"]={dp:dp,financeiro:Math.round(financeState.filter(x=>x.checked&&x.evidence).length/financeItems.length*100),status:financeCompleted?'Aguardando Gerência':dp===100?'Aguardando Financeiro':'Em andamento',registradoEm:new Date().toLocaleString('pt-BR')};
+  hist["09/2026"]={dp:dp,financeiro:Math.round(financeState.filter(x=>x.checked&&x.evidence).length/financeItems.length*100),status:gerenciaApproved?'Fechado':financeCompleted?'Aguardando Gerência':dp===100?'Aguardando Financeiro':'Em andamento',registradoEm:new Date().toLocaleString('pt-BR')};
   localStorage.setItem('cabana_fechamentos_v22',JSON.stringify(hist));
   renderHistoricoFechamentos();
 }
