@@ -23,6 +23,7 @@
 <div id="modal" class="modal hidden"><div class="modalbox"><h3 id="mt"></h3><div id="mb"></div><div class="right" style="margin-top:15px"><button class="btn secondary" onclick="closeModal()">Fechar</button></div></div></div>
 
 <script>
+const viewEl=document.getElementById("view");
 const KEY='cabana_gestao_lacunas_corrigidas_v1';
 const employees=[
 ["000331","Manoel Junior Oliveira Farias","Administração","Gerente","Ativo","01/10/2009"],
@@ -76,7 +77,7 @@ function go(page){
  document.getElementById("title").textContent=pages.find(x=>x[0]===page)?.[1]||"Cabana Gestão";
  document.getElementById("roleLabel").textContent=`${S.user} • ${S.role}`;
  const v=document.getElementById("view");
- v.innerHTML="";
+ viewEl.innerHTML="";
  ({dashboard,dp,employees:employeesPage,aso,vac,docs,fiscal,reports,audit:auditsPage,users:usersPage}[page]||dashboard)();
 }
 function dashboard(){
@@ -84,7 +85,7 @@ function dashboard(){
  const exp=S.docs.filter(d=>d.exp && daysTo(d.exp)<=90).length;
  const aso=S.aso.filter(a=>a.next && daysTo(a.next)<=90).length;
  const unresolved=S.alerts.filter(a=>a.state!=="Resolvido").length;
- v.innerHTML=`
+ viewEl.innerHTML=`
  <div class="grid">
  <div class="card"><div class="muted">Colaboradores cadastrados</div><div class="kpi">${S.employees.length}</div><div class="muted">Base atual</div></div>
  <div class="card"><div class="muted">Fechamento 09/2026</div><div class="kpi">${pct}%</div><div class="muted">${c.status==="closed"?"Fechado":c.reopen?"Reaberto":"Em andamento"}</div></div>
@@ -124,7 +125,7 @@ function dp(){
  html+=`</div></div>`;
  html+=`<div class="section card"><div class="title"><h2>Histórico do fechamento</h2></div><table><tr><th>Versão</th><th>Status</th><th>Data</th><th>Usuário</th><th>Motivo</th></tr>
  <tr><td>${c.version}</td><td>${c.status}</td><td>${c.closedAt||"—"}</td><td>${c.closedAt?"Usuário DP":"—"}</td><td>${c.reopen?esc(c.reopen.reason):"—"}</td></tr></table></div>`;
- v.innerHTML=html;
+ viewEl.innerHTML=html;
 }
 function toggleDP(i,val){if(S.role!=="DP"||S.closure.status==="closed")return;S.closure.done[i]=val;save();audit("ALTERAR_ITEM_FECHAMENTO","Fechamento","09/2026",`${i+1} - ${dpItems[i]} = ${val?"Concluído":"Pendente"}`);go("dp")}
 function itemEvidence(i){
@@ -160,7 +161,7 @@ function confirmReopen(){
  save();audit("AUTORIZAR_REABERTURA","Fechamento","09/2026",`Itens reabertos: ${idx.map(i=>i+1).join(", ")}`);closeModal();go("dp");
 }
 function employeesPage(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Colaboradores 360°</h2><span class="muted">${S.employees.length} cadastrados • salários não exibidos</span></div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Colaboradores 360°</h2><span class="muted">${S.employees.length} cadastrados • salários não exibidos</span></div>
  <div class="toolbar"><input id="eq" placeholder="Nome, código ou setor" oninput="renderEmployees()"><select id="es" onchange="renderEmployees()"><option>Todos</option><option>Ativo</option><option>Férias</option><option>Afastado/INSS</option><option>Aviso-prévio</option><option>Inativo</option></select>
  ${S.role==="DP"?'<button class="btn primary" onclick="newEmployee()">Novo colaborador</button>':""}<button class="btn secondary" onclick="importEmployeeHelp()">Importar planilha</button></div><div id="empTable"></div></div>`;
  renderEmployees();
@@ -188,7 +189,7 @@ function saveEmployee(){
 }
 function importEmployeeHelp(){modal("Importação de colaboradores","Para a carga inicial, utilize CSV/XLSX com validação de CPF, duplicidade e campos obrigatórios. Esta versão de homologação deixa o fluxo preparado para a importação real sem gravar dados incompletos.");}
 function aso(){
- v.innerHTML=`<div class="card"><div class="title"><h2>ASO</h2><span class="muted">Vencimento calculado pelo sistema</span></div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>ASO</h2><span class="muted">Vencimento calculado pelo sistema</span></div>
  <div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newASO()">Novo ASO</button>':""}<select id="af" onchange="renderASO()"><option>Todos</option><option>Válido</option><option>Vencendo</option><option>Vencido</option><option>Pendente</option></select></div><div id="asoTable"></div></div>`;renderASO();
 }
 function asoStatus(a){if(!a.date)return"Pendente";if(!a.next)return"Válido";const d=daysTo(a.next);return d<0?"Vencido":d<=90?"Vencendo":"Válido"}
@@ -196,7 +197,7 @@ function renderASO(){const f=document.getElementById("af")?.value||"Todos";const
 function newASO(){modal("Novo ASO",`<div class="two"><div><label>Colaborador</label><select id="ac">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)} — ${e.code}</option>`).join("")}</select></div><div><label>Tipo</label><select id="at"><option>Admissional</option><option>Periódico</option><option>Demissional</option><option>Retorno</option><option>Mudança de risco</option></select></div><div><label>Data</label><input id="ad" type="date"></div><div><label>Próximo vencimento</label><input id="an" type="date"></div><div><label>Arquivo</label><input id="afl"></div></div><p class="muted">Vencimento obrigatório em Periódico, Retorno e Mudança de risco; opcional em Admissional e Demissional.</p><div class="right"><button class="btn primary" onclick="saveASO()">Salvar</button></div>`)}
 function saveASO(){const type=document.getElementById("at").value,next=document.getElementById("an").value;if(["Periódico","Retorno","Mudança de risco"].includes(type)&&!next){modal("Obrigatório","Informe o próximo vencimento.");return}const a={code:document.getElementById("ac").value,type,date:document.getElementById("ad").value,next,file:document.getElementById("afl").value};S.aso.push(a);const e=S.employees.find(x=>x.code===a.code);e.timeline.push(`ASO ${a.type} lançado em ${now()}`);save();audit("CRIAR_ASO","ASO",a.code,a.type);closeModal();go("aso")}
 function vac(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Férias e Afastamentos</h2><span class="muted">Lançamentos ficam neste módulo</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newVac()">Nova férias</button><button class="btn warn" onclick="newAbs()">Novo afastamento/atestado</button>':""}</div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Férias e Afastamentos</h2><span class="muted">Lançamentos ficam neste módulo</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newVac()">Nova férias</button><button class="btn warn" onclick="newAbs()">Novo afastamento/atestado</button>':""}</div>
  <h3>Férias</h3><div id="vacTable"></div><h3>Afastamentos / Atestados</h3><div id="absTable"></div></div>`;
  document.getElementById("vacTable").innerHTML=`<table><tr><th>Colaborador</th><th>Período aquisitivo</th><th>Concessivo</th><th>Início</th><th>Fim</th><th>Status</th><th>Pagamento</th></tr>${S.vacations.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${a.acq||"—"}</td><td>${a.conc||"—"}</td><td>${a.start}</td><td>${a.end}</td><td><span class="tag warn">${a.status}</span></td><td>${a.payment||"Pendente"}</td></tr>`).join("")}</table>`;
  document.getElementById("absTable").innerHTML=`<table><tr><th>Colaborador</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Status</th><th>Evidência</th></tr>${S.absences.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${a.type}</td><td>${a.start}</td><td>${a.end||"—"}</td><td>${a.status}</td><td>${a.file||"—"}</td></tr>`).join("")}</table>`;
@@ -206,16 +207,16 @@ function saveVac(){const a={code:vc.value,acq:vaq.value,conc:vco.value,start:vs.
 function newAbs(){modal("Novo afastamento / atestado",`<div class="two"><div><label>Colaborador</label><select id="xc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Tipo</label><select id="xt"><option>Afastamento INSS</option><option>Atestado</option><option>Outros</option></select></div><div><label>Início</label><input id="xs" type="date"></div><div><label>Fim</label><input id="xe" type="date"></div><div><label>Evidência</label><input id="xf"></div><div><label>Observação</label><input id="xo"></div></div><p class="muted">Não registrar diagnóstico. CID, quando necessário, fica restrito a perfil autorizado.</p><div class="right"><button class="btn primary" onclick="saveAbs()">Salvar</button></div>`)}
 function saveAbs(){const a={code:xc.value,type:xt.value,start:xs.value,end:xe.value,status:"Em andamento",file:xf.value,note:xo.value};if(a.type==="Afastamento INSS"&&!a.file){modal("Evidência obrigatória","Afastamento INSS exige evidência.");return}S.absences.push(a);const e=S.employees.find(x=>x.code===a.code);if(a.type==="Afastamento INSS")e.status="Afastado/INSS";e.timeline.push(`${a.type} lançado em ${now()}`);save();audit("CRIAR_AFASTAMENTO","Afastamento",a.code,a.type);closeModal();go("vac")}
 function docs(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Documentos Obrigatórios</h2><span class="muted">Institucionais e documentos de colaboradores</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newDoc()">Novo documento</button>':""}<select id="df" onchange="renderDocs()"><option>Todos</option><option>Institucional</option><option>Colaborador</option></select></div><div id="docTable"></div></div>`;renderDocs();
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Documentos Obrigatórios</h2><span class="muted">Institucionais e documentos de colaboradores</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newDoc()">Novo documento</button>':""}<select id="df" onchange="renderDocs()"><option>Todos</option><option>Institucional</option><option>Colaborador</option></select></div><div id="docTable"></div></div>`;renderDocs();
 }
 function daysTo(s){if(!s)return 99999;const d=new Date(s+"T00:00:00");return Math.ceil((d-new Date())/86400000)}
 function docStatus(d){if(!d.exp)return"Sem validade";const n=daysTo(d.exp);return n<0?"Vencido":n<=90?"Vencendo":"Válido"}
 function renderDocs(){const f=document.getElementById("df")?.value||"Todos";const arr=S.docs.filter(d=>f==="Todos"||d.category===f);document.getElementById("docTable").innerHTML=`<table><tr><th>Documento</th><th>Categoria</th><th>Vinculado</th><th>Validade</th><th>Status</th><th>Responsável</th><th>Arquivo</th></tr>${arr.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.category}</td><td>${d.employeeCode?esc(empName(d.employeeCode)):"Institucional"}</td><td>${d.exp||"—"}</td><td><span class="tag ${docStatus(d)==="Válido"?"ok":docStatus(d)==="Vencido"?"red":"warn"}">${docStatus(d)}</span></td><td>${esc(d.owner||"—")}</td><td>${esc(d.file||"—")}</td></tr>`).join("")}</table>`}
-function newDoc(){modal("Novo documento",`<div class="two"><div><label>Nome</label><input id="dn"></div><div><label>Categoria</label><select id="dc"><option>Institucional</option><option>Colaborador</option></select></div><div><label>Colaborador (se aplicável)</label><select id="de"><option value="">Institucional</option>${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Número</label><input id="dnum"></div><div><label>Órgão emissor</label><input id="do"></div><div><label>Emissão</label><input id="di" type="date"></div><div><label>Validade</label><input id="dx" type="date"></div><div><label>Responsável</label><input id="dresp"></div><div><label>Substituto</label><input id="dsub"></div><div><label>Arquivo</label><input id="dfi"></div></div><div class="right"><button class="btn primary" onclick="saveDoc()">Salvar</button></div>`)}
-function saveDoc(){const d={id:"D"+(S.docs.length+1),name:dn.value,category:dc.value,employeeCode:de.value,number:dnum.value,issuer:do.value,issue:di.value,exp:dx.value,owner:dresp.value,substitute:dsub.value,file:dfi.value,history:[]};if(!d.name){modal("Obrigatório","Informe o nome do documento.");return}S.docs.push(d);save();audit("CRIAR_DOCUMENTO","Documento",d.id,d.name);closeModal();go("docs")}
+function newDoc(){modal("Novo documento",`<div class="two"><div><label>Nome</label><input id="dn"></div><div><label>Categoria</label><select id="dc"><option>Institucional</option><option>Colaborador</option></select></div><div><label>Colaborador (se aplicável)</label><select id="de"><option value="">Institucional</option>${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Número</label><input id="dnum"></div><div><label>Órgão emissor</label><input id="dorg"></div><div><label>Emissão</label><input id="di" type="date"></div><div><label>Validade</label><input id="dx" type="date"></div><div><label>Responsável</label><input id="dresp"></div><div><label>Substituto</label><input id="dsub"></div><div><label>Arquivo</label><input id="dfi"></div></div><div class="right"><button class="btn primary" onclick="saveDoc()">Salvar</button></div>`)}
+function saveDoc(){const d={id:"D"+(S.docs.length+1),name:dn.value,category:dc.value,employeeCode:de.value,number:dnum.value,issuer:dorg.value,issue:di.value,exp:dx.value,owner:dresp.value,substitute:dsub.value,file:dfi.value,history:[]};if(!d.name){modal("Obrigatório","Informe o nome do documento.");return}S.docs.push(d);save();audit("CRIAR_DOCUMENTO","Documento",d.id,d.name);closeModal();go("docs")}
 function fiscal(){
  const inst=S.docs.filter(d=>d.category==="Institucional");
- v.innerHTML=`<div class="card"><div class="title"><h2>Modo Fiscalização</h2><span class="muted">Somente documentos institucionais</span></div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Modo Fiscalização</h2><span class="muted">Somente documentos institucionais</span></div>
  <div class="notice info">Acesso somente leitura. Também é possível gerar link temporário com validade curta. Todo acesso é auditado.</div>
  <div class="toolbar">${S.role!=="FISCAL"?'<button class="btn primary" onclick="newFiscalLink()">Gerar link temporário</button>':""}</div>
  <table><tr><th>Documento</th><th>Validade</th><th>Status</th><th>Arquivo</th></tr>${inst.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.exp||"—"}</td><td>${docStatus(d)}</td><td>${esc(d.file||"Não anexado")}</td></tr>`).join("")}</table></div>
@@ -223,7 +224,7 @@ function fiscal(){
 }
 function newFiscalLink(){const until=new Date(Date.now()+30*60000);const x={token:"FISC-"+Math.random().toString(36).slice(2,10).toUpperCase(),until:until.toISOString()};S.fiscalLinks.push(x);save();audit("GERAR_LINK_FISCAL","Fiscalização",x.token,`Validade ${until.toLocaleString("pt-BR")}`);go("fiscal");modal("Link temporário gerado",`Token: <b>${x.token}</b><br>Validade: ${until.toLocaleString("pt-BR")}<br><br>Na versão de produção, o token será gerado pelo backend e poderá ser revogado a qualquer momento.`)}
 function reports(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Relatórios</h2><span class="muted">Exportação controlada</span></div><div class="grid">
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Relatórios</h2><span class="muted">Exportação controlada</span></div><div class="grid">
  ${["Fechamento mensal","Colaboradores","Férias","Afastamentos/Atestados","ASO","Documentos","Admissões/Desligamentos","Auditoria"].map((x,i)=>`<div class="card"><b>${x}</b><p class="muted">Consulta e exportação conforme permissão.</p><button class="btn secondary" onclick="exportReport('${x}')">Exportar CSV</button></div>`).join("")}</div>
  <div class="notice info">Toda exportação é registrada na auditoria. Relatórios de saúde ocupacional ficam restritos a perfis autorizados e não exibem diagnóstico no painel gerencial.</div></div>`;
 }
@@ -231,11 +232,11 @@ function exportReport(name){if(S.role==="GERENCIA"&&name==="ASO"){audit("EXPORTA
  audit("EXPORTAR_RELATORIO","Relatório",name,"CSV");downloadCSV(name,[["Nome","Código","Setor","Status"],...S.employees.map(e=>[e.name,e.code,e.sector,e.status])])}
 function downloadCSV(name,rows){const csv=rows.map(r=>r.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download=name.replace(/[^\w]+/g,"_")+".csv";a.click()}
 function auditsPage(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Auditoria</h2><span class="muted">Registros somente de inserção</span></div><div class="notice info">Nenhum perfil pode editar ou excluir registros de auditoria nesta homologação.</div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Auditoria</h2><span class="muted">Registros somente de inserção</span></div><div class="notice info">Nenhum perfil pode editar ou excluir registros de auditoria nesta homologação.</div>
  <table><tr><th>ID</th><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Registro</th><th>Detalhes</th></tr>${S.audits.slice().reverse().map(a=>`<tr><td>${a.id}</td><td>${a.at}</td><td>${esc(a.user)}</td><td>${a.action}</td><td>${a.entity}</td><td>${esc(a.record)}</td><td>${esc(a.details)}</td></tr>`).join("")}</table></div>`;
 }
 function usersPage(){
- v.innerHTML=`<div class="card"><div class="title"><h2>Usuários e Permissões</h2><span class="muted">Admin TI administra</span></div><div class="notice info">Senha provisória e redefinição são administrativas. Conta bloqueia após 5 tentativas inválidas. Não há expiração automática por inatividade.</div>
+ viewEl.innerHTML=`<div class="card"><div class="title"><h2>Usuários e Permissões</h2><span class="muted">Admin TI administra</span></div><div class="notice info">Senha provisória e redefinição são administrativas. Conta bloqueia após 5 tentativas inválidas. Não há expiração automática por inatividade.</div>
  ${S.role==="ADMIN"?'<button class="btn primary" onclick="newUser()">Novo usuário</button>':""}
  <table style="margin-top:12px"><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ação</th></tr>${S.users.map((u,i)=>`<tr><td>${esc(u.name)}</td><td>${u.role}</td><td>${u.active?"Ativo":"Inativo"}</td><td>${S.role==="ADMIN"?`<button class="btn secondary" onclick="toggleUser(${i})">${u.active?"Inativar":"Ativar"}</button>`:"—"}</td></tr>`).join("")}</table></div>`;
 }
