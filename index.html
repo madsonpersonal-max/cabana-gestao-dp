@@ -8,6 +8,8 @@
 :root{--g:#214f38;--g2:#2f6b4b;--bg:#f4f6f4;--card:#fff;--tx:#1e2a23;--mut:#65736b;--bd:#dce4df;--ok:#15803d;--warn:#a16207;--red:#b42318;--blue:#155eef;--chip:#edf3ef}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px Arial,sans-serif}.app{min-height:100vh;display:flex}.side{position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--g);color:#fff;padding:22px 15px;overflow:auto}.brand{font-size:23px;font-weight:800}.sub{font-size:12px;opacity:.75;margin:4px 0 24px}.nav button{display:block;width:100%;border:0;background:transparent;color:#fff;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;cursor:pointer}.nav button:hover,.nav button.on{background:rgba(255,255,255,.14)}.main{margin-left:250px;width:calc(100% - 250px);padding:24px;max-width:1550px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.top h1{margin:0;font-size:27px}.role{color:var(--mut);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:17px;box-shadow:0 2px 7px #00000008}.kpi{font-size:27px;font-weight:800;margin-top:5px}.muted{color:var(--mut);font-size:12px}.section{margin-top:16px}.title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.title h2{margin:0;font-size:18px}.btn{border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer}.primary{background:var(--g);color:#fff}.secondary{background:#edf2ee;color:var(--g)}.blue{background:#eaf0ff;color:var(--blue)}.danger{background:#feeceb;color:var(--red)}.warn{background:#fff4df;color:var(--warn)}.ok{background:#e9f7ee;color:var(--ok)}.hidden{display:none!important}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}input,select,textarea{border:1px solid #ccd6d0;border-radius:8px;padding:9px;background:#fff;color:var(--tx)}input[type="file"]{display:block;background:#fff;cursor:pointer;min-width:0}input[type="file"]{display:block;min-width:0;width:100%;background:#fff;cursor:pointer}input{min-width:190px}textarea{min-height:80px;width:100%}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bd);overflow:hidden}th,td{padding:9px 10px;border-bottom:1px solid var(--bd);text-align:left;font-size:12.5px;vertical-align:top}th{background:#f7f9f7;color:#536158}tr:last-child td{border-bottom:0}.tag{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.tag.ok{background:#e8f6ee;color:var(--ok)}.tag.warn{background:#fff3cd;color:var(--warn)}.tag.red{background:#feeceb;color:var(--red)}.tag.blue{background:#eaf0ff;color:var(--blue)}.progress{height:10px;border-radius:20px;background:#e8ede9;overflow:hidden}.progress div{height:100%;background:var(--g2);width:0}.notice{padding:11px 13px;border-radius:8px;margin:10px 0}.notice.info{background:#edf3ff;color:#244c9a}.notice.ok{background:#e9f7ee;color:#176b47}.notice.warn{background:#fff4df;color:#8a5a00}.notice.red{background:#feeceb;color:#9f2018}.check{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #edf0ee}.check input{min-width:auto}.check small{display:block;color:var(--mut);margin-top:3px}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}.modalbox{background:#fff;width:min(700px,100%);max-height:90vh;overflow:auto;border-radius:12px;padding:20px}.modalbox h3{margin-top:0}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.flow span{background:var(--chip);padding:5px 9px;border-radius:8px;font-size:12px}.flow b{color:var(--mut)}.small{font-size:11px}.right{text-align:right}.dangerText{color:var(--red)}.sector-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.sector-card{border:1px solid var(--bd);background:#fff;border-radius:10px;padding:12px;text-align:left;cursor:pointer}.sector-card:hover{border-color:var(--g2);box-shadow:0 2px 8px #00000010}.sector-name{font-weight:700;font-size:13px;min-height:32px}.sector-count{font-size:25px;font-weight:800;color:var(--g);margin-top:5px}@media(max-width:900px){.sector-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.sector-grid{grid-template-columns:1fr}}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.side{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}}@media(max-width:650px){.app{display:block}.side{position:static;width:100%}.main{margin:0;width:100%;padding:14px}.grid,.two,.three{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -457,10 +459,10 @@ function fiscal(){
 function newFiscalLink(){const until=new Date(Date.now()+30*60000);const x={token:"FISC-"+Math.random().toString(36).slice(2,10).toUpperCase(),until:until.toISOString()};S.fiscalLinks.push(x);save();audit("GERAR_LINK_FISCAL","Fiscalização",x.token,`Validade ${until.toLocaleString("pt-BR")}`);go("fiscal");modal("Link temporário gerado",`Token: <b>${x.token}</b><br>Validade: ${until.toLocaleString("pt-BR")}<br><br>Na versão de produção, o token será gerado pelo backend e poderá ser revogado a qualquer momento.`)}
 function reports(){
  viewEl.innerHTML=`<div class="card"><div class="title"><h2>Relatórios</h2><span class="muted">Exportação controlada</span></div><div class="grid">
- ${["Fechamento mensal","Colaboradores","Férias","Afastamentos/Atestados","ASO","Documentos","Admissões/Desligamentos","Auditoria"].map((x,i)=>`<div class="card"><b>${x}</b><p class="muted">Consulta e exportação conforme permissão.</p><button class="btn secondary" onclick="exportReport('${x}')">Exportar CSV</button></div>`).join("")}</div>
+ ${["Fechamento mensal","Colaboradores","Férias","Afastamentos/Atestados","ASO","Documentos","Admissões/Desligamentos","Auditoria"].map(x=>`<div class="card"><b>${x}</b><p class="muted">Consulta e exportação conforme permissão.</p><div class="toolbar" style="margin-top:10px;margin-bottom:0"><button class="btn secondary" onclick="exportReport('${x}','xlsx')">Excel</button><button class="btn secondary" onclick="exportReport('${x}','pdf')">PDF</button></div></div>`).join("")}</div>
  <div class="notice info">Toda exportação é registrada na auditoria. Relatórios de saúde ocupacional ficam restritos a perfis autorizados e não exibem diagnóstico no painel gerencial.</div></div>`;
 }
-function exportReport(name){
+function exportReport(name,format="xlsx"){
  let headers=[],rows=[];
  if(name==="Fechamento mensal"){
    headers=["Competência","Status","DP","Financeiro","Gerência","Data de fechamento","Versão","Usuário"];
@@ -497,8 +499,39 @@ function exportReport(name){
    headers=["ID","Data/hora","Usuário","Ação","Entidade","Registro","Detalhes"];
    rows=(S.audits||[]).map(a=>[a.id,a.at,a.user,a.action,a.entity,a.record,a.details]);
  }
- audit("EXPORTAR_RELATORIO","Relatório",name,`CSV — ${rows.length} registro(s)`);
- downloadCSV(name,[headers,...rows]);
+ audit("EXPORTAR_RELATORIO","Relatório",name,`${format.toUpperCase()} — ${rows.length} registro(s)`);
+ const data=[headers,...rows];
+ if(format==="pdf") downloadPDF(name,headers,rows);
+ else downloadXLSX(name,data);
+}
+function downloadXLSX(name,data){
+ if(!window.XLSX){alert("Biblioteca Excel não carregada. Verifique a conexão e tente novamente.");return}
+ const wb=XLSX.utils.book_new();
+ const ws=XLSX.utils.aoa_to_sheet(data);
+ ws['!cols']=data[0].map((_,i)=>({wch:Math.min(45,Math.max(12,...data.map(r=>String(r[i]??"").length))+2)}));
+ XLSX.utils.book_append_sheet(wb,ws,"Relatório");
+ XLSX.writeFile(wb,name.replace(/[^\wÀ-ÿ]+/g,"_")+".xlsx");
+}
+function downloadPDF(name,headers,rows){
+ if(!window.jspdf?.jsPDF){alert("Biblioteca PDF não carregada. Verifique a conexão e tente novamente.");return}
+ const {jsPDF}=window.jspdf;
+ const doc=new jsPDF({orientation:headers.length>7?"landscape":"portrait",unit:"mm",format:"a4"});
+ const margin=10, pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
+ let y=18;
+ doc.setFontSize(14);doc.text("Cabana Gestão — "+name,margin,y);y+=7;
+ doc.setFontSize(8);doc.text("Gerado em "+new Date().toLocaleString("pt-BR"),margin,y);y+=7;
+ const usable=pageW-margin*2;
+ const widths=headers.map((h,i)=>Math.max(18,Math.min(55,Math.max(String(h).length,...rows.slice(0,80).map(r=>String(r[i]??"").length))*2.1)));
+ const total=widths.reduce((a,b)=>a+b,0);const scale=total>usable?usable/total:1;
+ const w=widths.map(x=>x*scale);
+ const lineH=5;
+ const drawRow=(row,bold=false)=>{
+   let x=margin;doc.setFontSize(7);doc.setFont(undefined,bold?"bold":"normal");
+   row.forEach((cell,i)=>{let txt=String(cell??"");const max=Math.max(8,Math.floor(w[i]/1.75));if(txt.length>max)txt=txt.slice(0,max-1)+"…";doc.text(txt,x+1,y+3.5);doc.rect(x,y,w[i],lineH);x+=w[i]});y+=lineH;
+ };
+ drawRow(headers,true);
+ rows.forEach(r=>{if(y+lineH>pageH-12){doc.addPage();y=12;drawRow(headers,true)}drawRow(r,false)});
+ doc.save(name.replace(/[^\wÀ-ÿ]+/g,"_")+".pdf");
 }
 function downloadCSV(name,rows){const csv=rows.map(r=>r.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download=name.replace(/[^\w]+/g,"_")+".csv";a.click()}
 function auditsPage(){
