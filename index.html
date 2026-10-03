@@ -16,7 +16,7 @@
   <div class="nav" id="nav"></div>
 </aside>
 <main class="main">
-  <div class="top"><h1 id="title">Dashboard</h1><div class="role" id="roleLabel"></div></div>
+  <div class="top"><h1 id="title">Dashboard</h1><div class="role" id="roleLabel"></div><button class="btn secondary" onclick="switchUser()">Trocar usuário</button></div>
   <div id="view"></div>
 </main>
 </div>
@@ -87,7 +87,7 @@ function dashboard(){
  </div>
  <div class="section card"><div class="title"><h2>Fechamento 09/2026</h2><button class="btn primary" onclick="go('dp')">Abrir DP</button></div>
  <div class="progress"><div style="width:${pct}%"></div></div><p>${done}/24 itens concluídos — ${pct}%</p>
- ${S.role==="GERENCIA"?'<div class="notice info">Gerência somente monitora. A autorização de reabertura é a única ação operacional deste fluxo.</div>':''}
+ ${S.role==="GERENCIA"?'<div class="notice info">Gerência pode analisar e autorizar/recusar solicitações de reabertura.</div>':''}
  ${c.reopen?`<div class="notice warn"><b>Competência reaberta.</b> Motivo: ${esc(c.reopen.reason)}</div>`:""}
  </div>
  <div class="section card"><div class="title"><h2>Funcionários por setor</h2><span class="muted">Acesso rápido à equipe de cada setor</span></div><div class="sector-grid">${sectorCounts.map(x=>`<button class="sector-card" onclick="openSector('${esc(x.name)}')"><div class="sector-name">${esc(x.name)}</div><div class="sector-count">${x.count}</div><div class="muted">funcionário${x.count===1?"":"s"}</div></button>`).join("")}</div></div>
@@ -115,10 +115,13 @@ function dp(){
  html+=`<div class="row" style="margin-top:16px">`;
  if(!closed&&S.role==="DP") html+=`<button class="btn primary" onclick="finishDP()">Concluir Fechamento</button><button class="btn secondary" onclick="completeAllDP()">Teste 24/24</button>`;
  if(closed&&S.role==="DP") html+=`<button class="btn warn" onclick="requestReopen()">Solicitar Reabertura</button>`;
- if(closed&&S.role==="GERENCIA") html+=`<button class="btn primary" onclick="authorizeReopen()">Autorizar Reabertura</button>`;
+ if(closed&&S.role==="DP"&&c.reopen?.state==="requested") html+=`<div class="notice warn"><b>Solicitação enviada à Gerência.</b> Motivo: ${esc(c.reopen.reason)}</div>`;
+ if(closed&&S.role==="GERENCIA"&&c.reopen?.state==="requested") html+=`<button class="btn primary" onclick="authorizeReopen()">Analisar Reabertura</button><div class="notice warn"><b>Há uma solicitação de reabertura aguardando sua autorização.</b><br>Solicitante: ${esc(c.reopen.requestedBy||"—")}<br>Motivo: ${esc(c.reopen.reason||"—")}</div>`;
+ if(closed&&S.role==="GERENCIA"&&c.reopen?.state!=="requested") html+=`<div class="notice info">Nenhuma solicitação de reabertura pendente.</div>`;
  html+=`</div></div>`;
  html+=`<div class="section card"><div class="title"><h2>Histórico do fechamento</h2></div><table><tr><th>Versão</th><th>Status</th><th>Data</th><th>Usuário</th><th>Motivo</th></tr>
- <tr><td>${c.version}</td><td>${c.status}</td><td>${c.closedAt||"—"}</td><td>${c.closedAt?"Usuário DP":"—"}</td><td>${c.reopen?esc(c.reopen.reason):"—"}</td></tr></table></div>`;
+ <tr><td>${c.version}</td><td>${c.status}</td><td>${c.closedAt||"—"}</td><td>${c.closedAt?"Usuário DP":"—"}</td><td>${c.reopen?esc(c.reopen.reason):"—"}</td></tr>
+ ${c.reopen?`<tr><td>${c.version}</td><td>Reabertura ${esc(c.reopen.state||"")}</td><td>${c.reopen.authorizedAt||c.reopen.requestedAt||"—"}</td><td>${esc(c.reopen.authorizedBy||c.reopen.requestedBy||"—")}</td><td>${esc(c.reopen.reason||"—")}</td></tr>`:""}</table></div>`;
  viewEl.innerHTML=html;
 }
 function toggleDP(i,val){if(S.role!=="DP"||S.closure.status==="closed")return;S.closure.done[i]=val;save();audit("ALTERAR_ITEM_FECHAMENTO","Fechamento","09/2026",`${i+1} - ${dpItems[i]} = ${val?"Concluído":"Pendente"}`);go("dp")}
@@ -135,24 +138,53 @@ function finishDP(){
 }
 function requestReopen(){
  if(S.role!=="DP")return;
- modal("Solicitar reabertura",`<p>Informe obrigatoriamente o motivo.</p><textarea id="rr"></textarea><div class="right" style="margin-top:10px"><button class="btn primary" onclick="sendReopen()">Enviar solicitação</button></div>`);
+ if(S.closure.status!=="closed"){modal("Indisponível","A competência precisa estar fechada para solicitar reabertura.");return}
+ if(S.closure.reopen?.state==="requested"){modal("Solicitação já enviada","A competência já possui uma solicitação aguardando a Gerência.");return}
+ modal("Solicitar reabertura",`<p>Informe obrigatoriamente o motivo da reabertura.</p><textarea id="rr" placeholder="Ex.: correção de informação lançada no fechamento"></textarea><div class="right" style="margin-top:10px"><button class="btn primary" onclick="sendReopen()">Enviar para Gerência</button></div>`);
 }
 function sendReopen(){
  const r=document.getElementById("rr").value.trim();if(!r){modal("Obrigatório","Informe a justificativa.");return}
- S.closure.reopen={state:"requested",reason:r,requestedAt:now(),requestedBy:S.user};save();audit("SOLICITAR_REABERTURA","Fechamento","09/2026",r);closeModal();go("dp");
+ S.closure.reopen={state:"requested",reason:r,requestedAt:now(),requestedBy:S.user};
+ save();audit("SOLICITAR_REABERTURA","Fechamento","09/2026",r);closeModal();go("dp");
+ modal("Solicitação enviada","A competência continua bloqueada. A Gerência precisa autorizar a reabertura.");
 }
 function authorizeReopen(){
  if(S.role!=="GERENCIA")return;
+ if(S.closure.status!=="closed"){modal("Indisponível","A competência não está fechada.");return}
  if(!S.closure.reopen||S.closure.reopen.state!=="requested"){modal("Sem solicitação","Não existe solicitação de reabertura pendente.");return}
  const reason=S.closure.reopen.reason;
- modal("Autorizar reabertura",`<p>Solicitação: <b>${esc(reason)}</b></p><p>Selecione os itens que deverão voltar a pendente.</p><div id="reopenItems">${dpItems.map((x,i)=>`<label class="check"><input type="checkbox" data-ri="${i}"> <span>${i+1}. ${x}</span></label>`).join("")}</div><div class="right" style="margin-top:12px"><button class="btn primary" onclick="confirmReopen()">Autorizar</button></div>`);
+ modal("Autorizar reabertura",`<div class="notice warn"><b>Solicitação de:</b> ${esc(S.closure.reopen.requestedBy||"—")}<br><b>Motivo:</b> ${esc(reason)}</div><p>Selecione os itens que deverão voltar a pendente.</p><div id="reopenItems">${dpItems.map((x,i)=>`<label class="check"><input type="checkbox" data-ri="${i}"> <span>${i+1}. ${x}</span></label>`).join("")}</div><div class="right" style="margin-top:12px"><button class="btn primary" onclick="confirmReopen()">Autorizar reabertura</button><button class="btn danger" style="margin-left:6px" onclick="denyReopen()">Recusar</button></div>`);
 }
 function confirmReopen(){
  const idx=[...document.querySelectorAll("[data-ri]:checked")].map(x=>+x.dataset.ri);
  if(!idx.length){modal("Seleção obrigatória","Selecione pelo menos um item para correção.");return}
  idx.forEach(i=>S.closure.done[i]=false);
- S.closure.status="open";S.closure.reopen.state="authorized";S.closure.reopen.authorizedAt=now();S.closure.reopen.authorizedBy=S.user;S.closure.version++;
+ S.closure.status="open";
+ S.closure.reopen.state="authorized";
+ S.closure.reopen.authorizedAt=now();
+ S.closure.reopen.authorizedBy=S.user;
+ S.closure.version++;
  save();audit("AUTORIZAR_REABERTURA","Fechamento","09/2026",`Itens reabertos: ${idx.map(i=>i+1).join(", ")}`);closeModal();go("dp");
+ modal("Reabertura autorizada","A competência foi reaberta pela Gerência. O DP pode corrigir os itens selecionados e realizar novo fechamento.");
+}
+function denyReopen(){
+ if(S.role!=="GERENCIA")return;
+ const r=prompt("Informe o motivo da recusa:");
+ if(!r||!r.trim()){alert("O motivo da recusa é obrigatório.");return}
+ S.closure.reopen.state="denied";
+ S.closure.reopen.deniedAt=now();
+ S.closure.reopen.deniedBy=S.user;
+ S.closure.reopen.denialReason=r.trim();
+ save();audit("RECUSAR_REABERTURA","Fechamento","09/2026",r.trim());closeModal();go("dp");
+ modal("Reabertura recusada","A competência continua fechada. A solicitação foi registrada na auditoria.");
+}
+function switchUser(){
+ const opts=S.users.filter(u=>u.active).map((u,i)=>`<option value="${i}">${esc(u.name)} — ${esc(u.role)}</option>`).join("");
+ modal("Trocar usuário — homologação",`<p>Use esta função somente para testar os diferentes perfis antes da hospedagem.</p><select id="su" style="width:100%">${opts}</select><div class="right" style="margin-top:12px"><button class="btn primary" onclick="applySwitchUser()">Entrar como usuário</button></div>`);
+}
+function applySwitchUser(){
+ const u=S.users[Number(document.getElementById("su").value)];if(!u)return;
+ S.role=u.role;S.user=u.name;save();audit("TROCAR_USUARIO_HOMOLOGACAO","Usuário",u.name,u.role);closeModal();nav();go("dashboard");
 }
 function employeesPage(){
  viewEl.innerHTML=`<div class="card"><div class="title"><h2>Colaboradores 360°</h2><span class="muted">${S.employees.length} cadastrados • salários não exibidos</span></div>
