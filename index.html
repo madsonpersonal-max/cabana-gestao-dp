@@ -173,7 +173,14 @@ function profile(code){
  const warn=disc.filter(x=>x.kind==="Advertência"), susp=disc.filter(x=>x.kind==="Suspensão");
  modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${esc(e.code)} • ${esc(e.sector||e.dept||"")} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${esc(e.status)}</span></p><p>Admissão: ${esc(e.admission||"—")}</p>${e.terminationDate?`<p><b>Desligamento:</b> ${esc(e.terminationDate)} • ${esc(e.terminationType||"—")}</p>`:""}</div>
  <div class="toolbar"><button class="btn primary" onclick="newDisciplinary('${e.code}','Advertência')">+ Advertência</button><button class="btn secondary" onclick="newDisciplinary('${e.code}','Suspensão')">+ Suspensão</button>${e.status!=="Inativo"?`<button class="btn danger" onclick="newTermination('${e.code}')">Registrar desligamento</button>`:""}</div>
- <h4>ASO</h4><p>${aso.length} registro(s)</p><h4>Férias</h4><p>${va.length} registro(s)</p><h4>Afastamentos</h4><p>${ab.length} registro(s)</p><h4>Documentos</h4><p>${docs.length} registro(s)</p>
+ <h4>ASO (${aso.length})</h4>
+ ${aso.length?aso.map(a=>`<div class="notice ${asoStatus(a)==="Vencido"?"red":asoStatus(a)==="Vencendo"?"warn":"ok"}">
+ <b>${esc(a.date||"—")} — ${esc(a.type)}</b><br>
+ Próximo vencimento: ${esc(a.next||"—")}<br>
+ Status: <span class="tag ${asoStatus(a)==="Vencido"?"red":asoStatus(a)==="Vencendo"?"warn":"ok"}">${asoStatus(a)}</span>
+ ${a.fileName?`<br><a href="${a.dataUrl||"#"}" target="_blank" rel="noopener" download="${esc(a.fileName)}">Abrir anexo: ${esc(a.fileName)}</a>`:"<br><span class=\"muted\">Sem anexo</span>"}
+ </div>`).join(""):"<p class=\"muted\">Nenhum ASO registrado.</p>"}
+ <h4>Férias</h4><p>${va.length} registro(s)</p><h4>Afastamentos</h4><p>${ab.length} registro(s)</p><h4>Documentos</h4><p>${docs.length} registro(s)</p>
  <h4>Advertências (${warn.length})</h4>${renderDisc(warn)}
  <h4>Suspensões (${susp.length})</h4>${renderDisc(susp)}
  <h4>Histórico de desligamento (${terms.length})</h4>${terms.map(x=>`<div class="notice warn"><b>${esc(x.date)} — ${esc(x.type)}</b><br>${esc(x.reason)}${x.fileName?`<br><a href="${x.dataUrl||'#'}" download="${esc(x.fileName)}">Anexo: ${esc(x.fileName)}</a>`:""}</div>`).join("")||"<p class=\"muted\">Nenhum desligamento registrado.</p>"}
