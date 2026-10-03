@@ -35,14 +35,14 @@ const dpItems=[
 const defaultState={
  role:"DP", user:"Usuário DP",
  closure:{status:"open",done:Array(24).fill(false),evidence:{},notes:{},version:1,closedAt:null,reopen:null},
- employees:employees.map(x=>({code:x[0],name:x[1],sector:x[2],cargo:x[3],status:x[4],admission:x[5],timeline:[]})),
+ employees:employees.map(x=>({...x,sector:x.dept,timeline:[]})),
  aso:[], vacations:[], absences:[], docs:[], alerts:[], audits:[], users:[
  {name:"Usuário DP",role:"DP",active:true},{name:"Gerência",role:"GERENCIA",active:true},{name:"Admin TI",role:"ADMIN",active:true}
  ],
  fiscalLinks:[]
 };
 let S=load();
-function load(){try{const saved=JSON.parse(localStorage.getItem(KEY)||"{}");const st=Object.assign(structuredClone(defaultState),saved);if(!Array.isArray(st.employees)||st.employees.length<91)st.employees=structuredClone(defaultState.employees);return st}catch(e){return structuredClone(defaultState)}}
+function load(){try{const saved=JSON.parse(localStorage.getItem(KEY)||"{}");const st=Object.assign(structuredClone(defaultState),saved);if(!Array.isArray(st.employees)||st.employees.length<91||!st.employees.every(e=>e&&e.code&&e.name&&(e.sector||e.dept)&&e.cargo))st.employees=structuredClone(defaultState.employees);else st.employees=st.employees.map(e=>({...e,sector:e.sector||e.dept||"",timeline:Array.isArray(e.timeline)?e.timeline:[]}));return st}catch(e){return structuredClone(defaultState)}}
 function save(){localStorage.setItem(KEY,JSON.stringify(S))}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function now(){return new Date().toLocaleString("pt-BR")}
@@ -157,13 +157,13 @@ function employeesPage(){
 }
 function renderEmployees(){
  const q=(document.getElementById("eq")?.value||"").toLowerCase(), st=document.getElementById("es")?.value||"Todos";
- const arr=S.employees.filter(e=>(st==="Todos"||e.status===st)&&`${e.code} ${e.name} ${e.sector}`.toLowerCase().includes(q));
- document.getElementById("empTable").innerHTML=`<table><tr><th>Código</th><th>Nome</th><th>Setor</th><th>Cargo</th><th>Status</th><th>Ações</th></tr>${arr.map(e=>`<tr><td>${e.code}</td><td>${esc(e.name)}</td><td>${esc(e.sector)}</td><td>${esc(e.cargo)}</td><td><span class="tag ${e.status==="Ativo"?"ok":e.status==="Inativo"?"red":"warn"}">${e.status}</span></td><td><button class="btn blue" onclick="profile('${e.code}')">360°</button></td></tr>`).join("")}</table>`;
+ const arr=S.employees.filter(e=>(st==="Todos"||e.status===st)&&`${e.code} ${e.name} ${e.sector||e.dept||""}`.toLowerCase().includes(q));
+ document.getElementById("empTable").innerHTML=`<table><tr><th>Código</th><th>Nome</th><th>Setor</th><th>Cargo</th><th>Status</th><th>Ações</th></tr>${arr.map(e=>`<tr><td>${e.code}</td><td>${esc(e.name)}</td><td>${esc(e.sector||e.dept||"")}</td><td>${esc(e.cargo)}</td><td><span class="tag ${e.status==="Ativo"?"ok":e.status==="Inativo"?"red":"warn"}">${e.status}</span></td><td><button class="btn blue" onclick="profile('${e.code}')">360°</button></td></tr>`).join("")}</table>`;
 }
 function profile(code){
  const e=S.employees.find(x=>x.code===code);if(!e)return;
  const aso=S.aso.filter(a=>a.code===code),va=S.vacations.filter(a=>a.code===code),ab=S.absences.filter(a=>a.code===code),docs=S.docs.filter(d=>d.employeeCode===code);
- modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${e.code} • ${esc(e.sector)} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${e.status}</span></p><p>Admissão: ${e.admission||"—"}</p></div>
+ modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${e.code} • ${esc(e.sector||e.dept||"")} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${e.status}</span></p><p>Admissão: ${e.admission||"—"}</p></div>
  <h4>ASO</h4><p>${aso.length} registro(s)</p><h4>Férias</h4><p>${va.length} registro(s)</p><h4>Afastamentos</h4><p>${ab.length} registro(s)</p><h4>Documentos</h4><p>${docs.length} registro(s)</p>
  <h4>Timeline</h4><p>${(e.timeline||[]).map(x=>esc(x)).join("<br>")||"Sem eventos"}</p>`);
 }
