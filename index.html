@@ -36,7 +36,7 @@ const defaultState={
  role:"DP", user:"Usuário DP",
  closure:{status:"open",done:Array(24).fill(false),evidence:{},notes:{},version:1,closedAt:null,reopen:null},
  employees:employees.map(x=>({...x,sector:x.dept,timeline:[]})),
- aso:[], vacations:[], absences:[], docs:[], alerts:[], audits:[], users:[
+ aso:[], vacations:[], absences:[], docs:[], disciplinary:[], terminations:[], alerts:[], audits:[], users:[
  {name:"Usuário DP",role:"DP",active:true},{name:"Gerência",role:"GERENCIA",active:true},{name:"Admin TI",role:"ADMIN",active:true}
  ],
  fiscalLinks:[]
@@ -169,9 +169,35 @@ function renderEmployees(){
 function profile(code){
  const e=S.employees.find(x=>x.code===code);if(!e)return;
  const aso=S.aso.filter(a=>a.code===code),va=S.vacations.filter(a=>a.code===code),ab=S.absences.filter(a=>a.code===code),docs=S.docs.filter(d=>d.employeeCode===code);
- modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${e.code} • ${esc(e.sector||e.dept||"")} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${e.status}</span></p><p>Admissão: ${e.admission||"—"}</p></div>
+ const disc=S.disciplinary.filter(x=>x.code===code),terms=S.terminations.filter(x=>x.code===code);
+ const warn=disc.filter(x=>x.kind==="Advertência"), susp=disc.filter(x=>x.kind==="Suspensão");
+ modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${esc(e.code)} • ${esc(e.sector||e.dept||"")} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${esc(e.status)}</span></p><p>Admissão: ${esc(e.admission||"—")}</p>${e.terminationDate?`<p><b>Desligamento:</b> ${esc(e.terminationDate)} • ${esc(e.terminationType||"—")}</p>`:""}</div>
+ <div class="toolbar"><button class="btn primary" onclick="newDisciplinary('${e.code}','Advertência')">+ Advertência</button><button class="btn secondary" onclick="newDisciplinary('${e.code}','Suspensão')">+ Suspensão</button>${e.status!=="Inativo"?`<button class="btn danger" onclick="newTermination('${e.code}')">Registrar desligamento</button>`:""}</div>
  <h4>ASO</h4><p>${aso.length} registro(s)</p><h4>Férias</h4><p>${va.length} registro(s)</p><h4>Afastamentos</h4><p>${ab.length} registro(s)</p><h4>Documentos</h4><p>${docs.length} registro(s)</p>
+ <h4>Advertências (${warn.length})</h4>${renderDisc(warn)}
+ <h4>Suspensões (${susp.length})</h4>${renderDisc(susp)}
+ <h4>Histórico de desligamento (${terms.length})</h4>${terms.map(x=>`<div class="notice warn"><b>${esc(x.date)} — ${esc(x.type)}</b><br>${esc(x.reason)}${x.fileName?`<br><a href="${x.dataUrl||'#'}" download="${esc(x.fileName)}">Anexo: ${esc(x.fileName)}</a>`:""}</div>`).join("")||"<p class=\"muted\">Nenhum desligamento registrado.</p>"}
  <h4>Timeline</h4><p>${(e.timeline||[]).map(x=>esc(x)).join("<br>")||"Sem eventos"}</p>`);
+}
+function renderDisc(items){return items.map(x=>`<div class="notice ${x.kind==="Suspensão"?"warn":"info"}"><b>${esc(x.date)} — ${esc(x.kind)}</b><br>${esc(x.reason)}${x.fileName?`<br><a href="${x.dataUrl||'#'}" download="${esc(x.fileName)}">Anexo: ${esc(x.fileName)}</a>`:""}</div>`).join("")||"<p class=\"muted\">Nenhum registro.</p>"}
+function newDisciplinary(code,kind){
+ const e=S.employees.find(x=>x.code===code);
+ modal("Nova "+kind,`<div class="two"><div><label>Data</label><input id="ddate" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div><label>Motivo / descrição</label><input id="dreason" placeholder="Informe o motivo"></div></div><label>Anexo (opcional)</label><input id="dfile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><div class="right" style="margin-top:12px"><button class="btn primary" onclick="saveDisciplinary('${code}','${kind}')">Salvar ${kind}</button></div>`);
+}
+function saveDisciplinary(code,kind){
+ const reason=document.getElementById("dreason").value.trim();if(!reason){modal("Campo obrigatório","Informe o motivo/descrição.");return}
+ const file=document.getElementById("dfile").files[0];const rec={id:Date.now(),code,kind,date:document.getElementById("ddate").value,reason,fileName:file?file.name:"",dataUrl:""};
+ const finish=()=>{S.disciplinary.push(rec);const e=S.employees.find(x=>x.code===code);e.timeline=e.timeline||[];e.timeline.unshift(`${kind} registrada em ${new Date().toLocaleDateString("pt-BR")}: ${reason}`);audit("CRIAR_"+kind.toUpperCase(),"Colaborador",code,reason);closeModal();profile(code)};
+ if(file){const rd=new FileReader();rd.onload=()=>{rec.dataUrl=rd.result;finish()};rd.readAsDataURL(file)}else finish();
+}
+function newTermination(code){
+ modal("Registrar desligamento",`<div class="two"><div><label>Data do desligamento</label><input id="tdate" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div><label>Tipo</label><select id="ttype"><option>Pedido de demissão</option><option>Dispensa sem justa causa</option><option>Dispensa por justa causa</option><option>Término de contrato</option><option>Outros</option></select></div><div style="grid-column:1/-1"><label>Motivo / observação</label><textarea id="treason" rows="3" placeholder="Informe o motivo ou observação"></textarea></div></div><label>Anexo rescisório (opcional)</label><input id="tfile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><div class="right" style="margin-top:12px"><button class="btn danger" onclick="saveTermination('${code}')">Confirmar desligamento</button></div>`);
+}
+function saveTermination(code){
+ const e=S.employees.find(x=>x.code===code);if(!e)return;const date=document.getElementById("tdate").value,type=document.getElementById("ttype").value,reason=document.getElementById("treason").value.trim();if(!date){modal("Campo obrigatório","Informe a data do desligamento.");return}
+ const file=document.getElementById("tfile").files[0];const rec={id:Date.now(),code,date,type,reason,fileName:file?file.name:"",dataUrl:""};
+ const finish=()=>{S.terminations.push(rec);e.status="Inativo";e.terminationDate=date;e.terminationType=type;e.timeline=e.timeline||[];e.timeline.unshift(`Desligamento registrado em ${date}: ${type}`);audit("DESLIGAR_COLABORADOR","Colaborador",code,`${type}${reason?" — "+reason:""}`);save();closeModal();profile(code)};
+ if(file){const rd=new FileReader();rd.onload=()=>{rec.dataUrl=rd.result;finish()};rd.readAsDataURL(file)}else finish();
 }
 function newEmployee(){
  modal("Novo colaborador",`<div class="two"><div><label>Código</label><input id="nc"></div><div><label>Nome</label><input id="nn"></div><div><label>Setor</label><input id="ns"></div><div><label>Cargo</label><input id="ng"></div><div><label>Admissão</label><input id="na"></div></div><div class="right" style="margin-top:12px"><button class="btn primary" onclick="saveEmployee()">Cadastrar</button></div>`);
