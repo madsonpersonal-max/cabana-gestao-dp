@@ -1,213 +1,249 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cabana Gestão DP</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cabana Gestão — Homologação Lacunas Corrigidas</title>
 <style>
-:root{
-  --green:#234b35; --green2:#2f6849; --light:#f4f6f3; --white:#fff;
-  --text:#243029; --muted:#68756d; --line:#dfe5e1;
-  --danger:#b42318; --warn:#a15c00; --ok:#16734a; --blue:#185adb;
-}
-*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--light);color:var(--text)}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-.app{display:flex;min-height:100vh}.side{width:250px;background:var(--green);color:white;padding:22px 16px;position:fixed;inset:0 auto 0 0}
-.brand{font-size:22px;font-weight:800;margin-bottom:5px}.subtitle{font-size:12px;opacity:.75;margin-bottom:25px}
-.nav button{width:100%;border:0;background:transparent;color:white;text-align:left;padding:12px;border-radius:9px;margin:3px 0}.nav button:hover,.nav button.active{background:rgba(255,255,255,.13)}
-.main{margin-left:250px;width:calc(100% - 250px);padding:26px;max-width:1500px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:27px}.user{font-size:13px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.card{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 7px rgba(0,0,0,.03)}.card h3{margin:0 0 8px;font-size:14px}.big{font-size:28px;font-weight:800}.muted{color:var(--muted);font-size:13px}
-.section{margin-top:20px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.section-title h2{font-size:18px;margin:0}
-.progress{height:10px;background:#e8ede9;border-radius:20px;overflow:hidden}.progress>div{height:100%;background:var(--green2);width:0}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700}.primary{background:var(--green);color:white}.secondary{background:#eef2ef;color:var(--green)}.danger{background:#feeceb;color:var(--danger)}.blue{background:#eaf0ff;color:var(--blue)}
-table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--line);border-radius:10px;overflow:hidden}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{background:#f7f9f7;color:#536158}tr:last-child td{border-bottom:0}
-.status{display:inline-block;padding:5px 8px;border-radius:20px;font-size:11px;font-weight:700}.s-pend{background:#fff3cd;color:#8a5a00}.s-ok{background:#e8f6ee;color:var(--ok)}.s-closed{background:#e8f6ee;color:var(--ok)}.s-alert{background:#feeceb;color:var(--danger)}
-.notice{padding:12px 14px;border-radius:9px;margin:12px 0;font-size:13px}.notice.info{background:#edf3ff;color:#244c9a}.notice.warn{background:#fff5df;color:#8a5a00}.notice.ok{background:#e8f6ee;color:#176b47}
-.hidden{display:none!important}.toolbar{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}input,select,textarea{border:1px solid #cfd8d2;border-radius:8px;padding:9px;background:white}input{min-width:220px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px}.modal-box{background:white;border-radius:12px;max-width:600px;width:100%;padding:22px}.modal-box h3{margin-top:0}
-.check{display:flex;gap:10px;align-items:flex-start}.check input{min-width:auto;margin-top:3px}.check small{display:block;color:var(--muted);margin-top:3px}
-@media(max-width:900px){.side{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.side{position:static;width:100%;min-height:auto}.app{display:block}.main{margin:0;width:100%;padding:16px}.grid{grid-template-columns:1fr}.top{align-items:flex-start;gap:10px;flex-direction:column}}
+:root{--g:#214f38;--g2:#2f6b4b;--bg:#f4f6f4;--card:#fff;--tx:#1e2a23;--mut:#65736b;--bd:#dce4df;--ok:#15803d;--warn:#a16207;--red:#b42318;--blue:#155eef;--chip:#edf3ef}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px Arial,sans-serif}.app{min-height:100vh;display:flex}.side{position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--g);color:#fff;padding:22px 15px;overflow:auto}.brand{font-size:23px;font-weight:800}.sub{font-size:12px;opacity:.75;margin:4px 0 24px}.nav button{display:block;width:100%;border:0;background:transparent;color:#fff;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;cursor:pointer}.nav button:hover,.nav button.on{background:rgba(255,255,255,.14)}.main{margin-left:250px;width:calc(100% - 250px);padding:24px;max-width:1550px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.top h1{margin:0;font-size:27px}.role{color:var(--mut);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:17px;box-shadow:0 2px 7px #00000008}.kpi{font-size:27px;font-weight:800;margin-top:5px}.muted{color:var(--mut);font-size:12px}.section{margin-top:16px}.title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.title h2{margin:0;font-size:18px}.btn{border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer}.primary{background:var(--g);color:#fff}.secondary{background:#edf2ee;color:var(--g)}.blue{background:#eaf0ff;color:var(--blue)}.danger{background:#feeceb;color:var(--red)}.warn{background:#fff4df;color:var(--warn)}.ok{background:#e9f7ee;color:var(--ok)}.hidden{display:none!important}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}input,select,textarea{border:1px solid #ccd6d0;border-radius:8px;padding:9px;background:#fff;color:var(--tx)}input{min-width:190px}textarea{min-height:80px;width:100%}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bd);overflow:hidden}th,td{padding:9px 10px;border-bottom:1px solid var(--bd);text-align:left;font-size:12.5px;vertical-align:top}th{background:#f7f9f7;color:#536158}tr:last-child td{border-bottom:0}.tag{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.tag.ok{background:#e8f6ee;color:var(--ok)}.tag.warn{background:#fff3cd;color:var(--warn)}.tag.red{background:#feeceb;color:var(--red)}.tag.blue{background:#eaf0ff;color:var(--blue)}.progress{height:10px;border-radius:20px;background:#e8ede9;overflow:hidden}.progress div{height:100%;background:var(--g2);width:0}.notice{padding:11px 13px;border-radius:8px;margin:10px 0}.notice.info{background:#edf3ff;color:#244c9a}.notice.ok{background:#e9f7ee;color:#176b47}.notice.warn{background:#fff4df;color:#8a5a00}.notice.red{background:#feeceb;color:#9f2018}.check{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #edf0ee}.check input{min-width:auto}.check small{display:block;color:var(--mut);margin-top:3px}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}.modalbox{background:#fff;width:min(700px,100%);max-height:90vh;overflow:auto;border-radius:12px;padding:20px}.modalbox h3{margin-top:0}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.flow span{background:var(--chip);padding:5px 9px;border-radius:8px;font-size:12px}.flow b{color:var(--mut)}.small{font-size:11px}.right{text-align:right}.dangerText{color:var(--red)}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.side{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}}@media(max-width:650px){.app{display:block}.side{position:static;width:100%}.main{margin:0;width:100%;padding:14px}.grid,.two,.three{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
-  <div class="brand">Cabana Gestão</div>
-  <div class="subtitle">DP • RH • Documentos</div>
-  <div class="nav">
-    <button class="active" onclick="show('dashboard',this)">Dashboard</button>
-    <button onclick="show('dp',this)">DP / Fechamento</button>
-    <button onclick="show('colab',this)">Colaboradores 360°</button>
-    <button onclick="show('aso',this)">ASO</button>
-    <button onclick="show('ferias',this)">Férias e Afastamentos</button>
-    <button onclick="show('docs',this)">Documentos Obrigatórios</button>
-    <button onclick="show('fiscal',this)">Fiscalização</button>
-    <button onclick="show('rel',this)">Relatórios</button>
-    <button onclick="show('audit',this)">Auditoria</button>
-    <button onclick="show('config',this)">Configurações</button>
-  </div>
+  <div class="brand">Cabana Gestão</div><div class="sub">DP • RH • Documentos • Homologação</div>
+  <div class="nav" id="nav"></div>
 </aside>
-
 <main class="main">
-<div class="top"><h1 id="pageTitle">Dashboard</h1><div class="user">Usuário: DP • Homologação</div></div>
-
-<section id="dashboard">
-  <div class="grid">
-    <div class="card"><h3>Colaboradores</h3><div class="big">91</div><div class="muted">Base atual</div></div>
-    <div class="card"><h3>Fechamento 09/2026</h3><div class="big" id="dashPct">0%</div><div class="muted" id="dashStatus">Em andamento</div></div>
-    <div class="card"><h3>Pendências DP</h3><div class="big" id="dashPending">24</div><div class="muted">Itens obrigatórios</div></div>
-    <div class="card"><h3>Gerência</h3><div class="big">Monitoramento</div><div class="muted">Sem aprovação</div></div>
-  </div>
-  <div class="section card">
-    <div class="section-title"><h2>Fechamento da competência 09/2026</h2><button class="btn primary" onclick="show('dp')">Abrir DP</button></div>
-    <div class="progress"><div id="dashBar"></div></div>
-    <div class="muted" style="margin-top:8px" id="dashDetail">0 de 24 itens concluídos</div>
-  </div>
-  <div class="section notice info"><b>Regra atual:</b> o DP executa todo o fechamento. A Gerência apenas acompanha o resultado e o histórico.</div>
-</section>
-
-<section id="dp" class="hidden">
-  <div class="card">
-    <div class="section-title"><h2>Fechamento DP — 09/2026</h2><span class="status s-pend" id="dpStatus">EM ANDAMENTO</span></div>
-    <div class="progress"><div id="dpBar"></div></div>
-    <div style="margin-top:8px" id="dpPct">0% — 0/24</div>
-    <div id="dpNotice"></div>
-  </div>
-  <div class="section card">
-    <div class="section-title"><h2>Checklist de fechamento</h2><span class="muted">24 itens obrigatórios</span></div>
-    <div id="checklist"></div>
-    <div class="row" style="margin-top:18px">
-      <button class="btn secondary" onclick="completeAll()">Teste: concluir todos</button>
-      <button class="btn primary" id="finishBtn" onclick="finishDP()">Concluir Fechamento</button>
-      <button class="btn danger hidden" id="reopenBtn" onclick="reopen()">Reabrir competência</button>
-    </div>
-  </div>
-  <div class="section card">
-    <h2 style="font-size:18px">Histórico</h2>
-    <table><thead><tr><th>Competência</th><th>Status</th><th>Conclusão</th><th>Responsável</th></tr></thead>
-    <tbody id="history"></tbody></table>
-  </div>
-</section>
-
-<section id="colab" class="hidden">
- <div class="card"><div class="section-title"><h2>Colaboradores 360°</h2><span class="muted">91 colaboradores • salários não exibidos</span></div>
- <div class="toolbar"><input placeholder="Pesquisar nome, código ou setor" oninput="filterColab(this.value)"><select><option>Todos os status</option><option>Ativo</option><option>Férias</option><option>Afastado</option><option>Inativo</option></select></div>
- <table><thead><tr><th>Código</th><th>Nome</th><th>Setor</th><th>Status</th><th></th></tr></thead><tbody id="colabTable"></tbody></table></div>
-</section>
-
-<section id="aso" class="hidden">
- <div class="card"><div class="section-title"><h2>ASO</h2><span class="muted">Controle por colaborador</span></div>
- <table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Data</th><th>Próximo vencimento</th><th>Status</th></tr></thead>
- <tbody><tr><td>Selecionar colaborador</td><td>Periódico</td><td>—</td><td>—</td><td><span class="status s-pend">Pendente</span></td></tr></tbody></table></div>
-</section>
-
-<section id="ferias" class="hidden">
- <div class="card"><div class="section-title"><h2>Férias e Afastamentos</h2><span class="muted">Lançamentos ficam neste módulo</span></div>
- <table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead>
- <tbody><tr><td>Manoel Junior Oliveira Farias</td><td>Férias</td><td>01/10/2026</td><td>31/10/2026</td><td><span class="status s-pend">Programado</span></td></tr></tbody></table></div>
-</section>
-
-<section id="docs" class="hidden">
- <div class="card"><div class="section-title"><h2>Documentos Obrigatórios</h2><span class="muted">Validade e evidências</span></div>
- <table><thead><tr><th>Documento</th><th>Categoria</th><th>Validade</th><th>Status</th></tr></thead>
- <tbody><tr><td>Licenças e certificados</td><td>Institucional</td><td>—</td><td><span class="status s-pend">Cadastrar</span></td></tr></tbody></table></div>
-</section>
-
-<section id="fiscal" class="hidden">
- <div class="card"><div class="section-title"><h2>Modo Fiscalização</h2><span class="muted">Acesso rápido aos documentos válidos</span></div>
- <div class="notice info">Nesta área ficarão disponíveis os documentos institucionais vigentes, com acesso rápido ao PDF e indicação de validade.</div>
- </div>
-</section>
-
-<section id="rel" class="hidden">
- <div class="card"><h2>Relatórios</h2><div class="notice info">Estrutura preparada para fechamento mensal, férias, afastamentos, ASO, admissões, desligamentos, documentos e pendências.</div></div>
-</section>
-
-<section id="audit" class="hidden">
- <div class="card"><h2>Auditoria</h2><div class="notice info">As ações críticas do sistema serão registradas com usuário, data/hora, operação e registro afetado.</div></div>
-</section>
-
-<section id="config" class="hidden">
- <div class="card"><h2>Configurações</h2><div class="notice info">Módulo reservado para usuários, permissões, checklists e parâmetros do sistema.</div></div>
-</section>
-
-</main></div>
-
-<div id="modal" class="modal hidden"><div class="modal-box"><h3 id="modalTitle"></h3><div id="modalBody"></div><div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn secondary" onclick="closeModal()">Fechar</button></div></div></div>
+  <div class="top"><h1 id="title">Dashboard</h1><div class="role" id="roleLabel"></div></div>
+  <div id="view"></div>
+</main>
+</div>
+<div id="modal" class="modal hidden"><div class="modalbox"><h3 id="mt"></h3><div id="mb"></div><div class="right" style="margin-top:15px"><button class="btn secondary" onclick="closeModal()">Fechar</button></div></div></div>
 
 <script>
-const items=[
-"Conferência de ponto","Horas extras / banco de horas","Faltas e atrasos","Admissões do mês",
-"Desligamentos do mês","Férias","Afastamentos","Benefícios","Folha salarial","INSS","FGTS","IRRF",
-"eSocial","Encargos","Conferência de descontos","Conferência de proventos","Conferência de férias",
-"Rescisões","Folha final","Relatórios DP","Comprovantes","Arquivo digital","Conferência final DP","Liberação / conclusão do DP"
+const KEY='cabana_gestao_lacunas_corrigidas_v1';
+const employees=[
+["000331","Manoel Junior Oliveira Farias","Administração","Gerente","Ativo","01/10/2009"],
+["000332","Luis Henrique Furtado da Silva","Administração","","Ativo",""],
+["000333","Antonia Walesca Souza de Lima","Esporte / Academia","","Ativo",""],
+["000334","Aires Silva dos Santos","Segurança","","Ativo",""],
+["000335","Wanicy Aragao Simoes","Segurança","","Ativo",""],
+["000336","Samuel Oliveira Monteiro","Segurança","","Ativo",""],
+["000337","Rodrigo Alexandre da Silva Costa","Segurança","","Ativo",""],
+["000338","Arlyson de Leão Cavalcante","Segurança","","Ativo",""],
+["000339","Joyce Renata Damasceno da Silva","Segurança","","Ativo",""],
+["000340","Midiã Tamara Campos de Castro","Segurança","","Ativo",""]
 ];
-let state=JSON.parse(localStorage.getItem('cabana_dp_homologacao')||'null')||{done:Array(24).fill(false),closed:false,closedAt:null};
-
-function save(){localStorage.setItem('cabana_dp_homologacao',JSON.stringify(state));render();}
-function render(){
- const done=state.done.filter(Boolean).length,pct=Math.round(done/24*100);
- document.getElementById('dashPct').textContent=pct+'%';
- document.getElementById('dashPending').textContent=24-done;
- document.getElementById('dashStatus').textContent=state.closed?'Fechado':'Em andamento';
- document.getElementById('dashBar').style.width=pct+'%';
- document.getElementById('dashDetail').textContent=done+' de 24 itens concluídos';
- document.getElementById('dpBar').style.width=pct+'%';
- document.getElementById('dpPct').textContent=pct+'% — '+done+'/24';
- document.getElementById('dpStatus').textContent=state.closed?'FECHADO':'EM ANDAMENTO';
- document.getElementById('dpStatus').className='status '+(state.closed?'s-closed':'s-pend');
- const notice=document.getElementById('dpNotice');
- notice.innerHTML=state.closed?'<div class="notice ok"><b>FECHAMENTO CONCLUÍDO.</b> Competência 09/2026 está bloqueada para alterações.</div>':
- '<div class="notice info">O DP é responsável por todo o fechamento. A Gerência somente monitora.</div>';
- document.getElementById('finishBtn').classList.toggle('hidden',state.closed);
- document.getElementById('reopenBtn').classList.toggle('hidden',!state.closed);
- document.getElementById('checklist').innerHTML=items.map((x,i)=>`<div class="check" style="padding:11px 0;border-bottom:1px solid #edf0ee">
- <input type="checkbox" ${state.done[i]?'checked':''} ${state.closed?'disabled':''} onchange="toggleItem(${i},this.checked)">
- <div><b>${i+1}. ${x}</b><small>${state.done[i]?'Concluído':'Pendente'}</small></div></div>`).join('');
- document.getElementById('history').innerHTML=`<tr><td>09/2026</td><td><span class="status ${state.closed?'s-closed':'s-pend'}">${state.closed?'Fechado':'Em andamento'}</span></td><td>${state.closed?(state.closedAt||'—'):'—'}</td><td>${state.closed?'DP':'—'}</td></tr>`;
+const dpItems=[
+"Conferência de ponto","Horas extras / banco de horas","Faltas e atrasos","Admissões do mês","Desligamentos do mês",
+"Férias","Afastamentos","Benefícios","Folha salarial","INSS","FGTS","IRRF","eSocial","Encargos",
+"Conferência de descontos","Conferência de proventos","Conferência de férias","Rescisões","Folha final",
+"Relatórios DP","Comprovantes","Arquivo digital","Conferência final DP","Confirmação de liberação"
+];
+const defaultState={
+ role:"DP", user:"Usuário DP",
+ closure:{status:"open",done:Array(24).fill(false),evidence:{},notes:{},version:1,closedAt:null,reopen:null},
+ employees:employees.map(x=>({code:x[0],name:x[1],sector:x[2],cargo:x[3],status:x[4],admission:x[5],timeline:[]})),
+ aso:[], vacations:[], absences:[], docs:[], alerts:[], audits:[], users:[
+ {name:"Usuário DP",role:"DP",active:true},{name:"Gerência",role:"GERENCIA",active:true},{name:"Admin TI",role:"ADMIN",active:true}
+ ],
+ fiscalLinks:[]
+};
+let S=load();
+function load(){try{return Object.assign(structuredClone(defaultState),JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){return structuredClone(defaultState)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function now(){return new Date().toLocaleString("pt-BR")}
+function audit(action,entity,record,details=""){S.audits.push({id:S.audits.length+1,at:now(),user:S.user,action,entity,record,details});save()}
+function modal(t,b){document.getElementById("mt").textContent=t;document.getElementById("mb").innerHTML=b;document.getElementById("modal").classList.remove("hidden")}
+function closeModal(){document.getElementById("modal").classList.add("hidden")}
+const pages=[
+["dashboard","Dashboard"],["dp","DP / Fechamento"],["employees","Colaboradores 360°"],["aso","ASO"],
+["vac","Férias e Afastamentos"],["docs","Documentos Obrigatórios"],["fiscal","Fiscalização"],
+["reports","Relatórios"],["audit","Auditoria"],["users","Usuários e Permissões"]
+];
+function can(page){
+ if(S.role==="FISCAL") return ["fiscal"].includes(page);
+ return true;
 }
-function toggleItem(i,v){if(state.closed)return;state.done[i]=v;save()}
-function completeAll(){if(state.closed)return;state.done=Array(24).fill(true);save()}
+function nav(){document.getElementById("nav").innerHTML=pages.filter(p=>can(p[0])).map(p=>`<button id="n_${p[0]}" onclick="go('${p[0]}')">${p[1]}</button>`).join("")}
+function go(page){
+ if(!can(page)) return;
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("on"));
+ const n=document.getElementById("n_"+page); if(n)n.classList.add("on");
+ document.getElementById("title").textContent=pages.find(x=>x[0]===page)?.[1]||"Cabana Gestão";
+ document.getElementById("roleLabel").textContent=`${S.user} • ${S.role}`;
+ const v=document.getElementById("view");
+ v.innerHTML="";
+ ({dashboard,dp,employees:employeesPage,aso,vac,docs,fiscal,reports,audit:auditsPage,users:usersPage}[page]||dashboard)();
+}
+function dashboard(){
+ const c=S.closure, done=c.done.filter(Boolean).length, pct=Math.round(done/24*100);
+ const exp=S.docs.filter(d=>d.exp && daysTo(d.exp)<=90).length;
+ const aso=S.aso.filter(a=>a.next && daysTo(a.next)<=90).length;
+ const unresolved=S.alerts.filter(a=>a.state!=="Resolvido").length;
+ v.innerHTML=`
+ <div class="grid">
+ <div class="card"><div class="muted">Colaboradores cadastrados</div><div class="kpi">${S.employees.length}</div><div class="muted">Base atual</div></div>
+ <div class="card"><div class="muted">Fechamento 09/2026</div><div class="kpi">${pct}%</div><div class="muted">${c.status==="closed"?"Fechado":c.reopen?"Reaberto":"Em andamento"}</div></div>
+ <div class="card"><div class="muted">Alertas ativos</div><div class="kpi">${unresolved}</div><div class="muted">internos, sem notificação externa</div></div>
+ <div class="card"><div class="muted">Documentos/ASO próximos</div><div class="kpi">${exp+aso}</div><div class="muted">até 90 dias</div></div>
+ </div>
+ <div class="section card"><div class="title"><h2>Fechamento 09/2026</h2><button class="btn primary" onclick="go('dp')">Abrir DP</button></div>
+ <div class="progress"><div style="width:${pct}%"></div></div><p>${done}/24 itens concluídos — ${pct}%</p>
+ ${S.role==="GERENCIA"?'<div class="notice info">Gerência somente monitora. A autorização de reabertura é a única ação operacional deste fluxo.</div>':''}
+ ${c.reopen?`<div class="notice warn"><b>Competência reaberta.</b> Motivo: ${esc(c.reopen.reason)}</div>`:""}
+ </div>
+ <div class="section grid">
+ <div class="card"><b>ASO</b><p class="muted">${S.aso.length} registros</p><button class="btn secondary" onclick="go('aso')">Consultar</button></div>
+ <div class="card"><b>Férias/Afastamentos</b><p class="muted">${S.vacations.length+S.absences.length} registros</p><button class="btn secondary" onclick="go('vac')">Consultar</button></div>
+ <div class="card"><b>Documentos</b><p class="muted">${S.docs.length} cadastrados</p><button class="btn secondary" onclick="go('docs')">Consultar</button></div>
+ <div class="card"><b>Auditoria</b><p class="muted">${S.audits.length} registros imutáveis</p><button class="btn secondary" onclick="go('audit')">Consultar</button></div>
+ </div>`;
+}
+function dp(){
+ const c=S.closure, done=c.done.filter(Boolean).length,pct=Math.round(done/24*100), closed=c.status==="closed";
+ let html=`<div class="card"><div class="title"><h2>Fechamento DP — 09/2026</h2><span class="tag ${closed?"ok":"warn"}">${closed?"FECHADO":c.reopen?"REABERTO":"EM ANDAMENTO"}</span></div>
+ <div class="progress"><div style="width:${pct}%"></div></div><p><b>${pct}%</b> — ${done}/24 — fechamento nº ${c.version}</p>
+ ${closed?'<div class="notice ok"><b>Fechamento concluído.</b> Competência bloqueada para edição.</div>':c.reopen?'<div class="notice warn"><b>Competência reaberta.</b> Apenas os itens selecionados pela Gerência/fluxo de reabertura voltam a pendente.</div>':'<div class="notice info">Evidência é opcional nos 24 itens. Todos os 24 itens são obrigatórios para fechar.</div>'}
+ </div>`;
+ html+=`<div class="section card"><div class="title"><h2>Checklist — 24 itens</h2><span class="muted">Evidência opcional</span></div>`;
+ html+=dpItems.map((item,i)=>{
+ const checked=c.done[i];
+ return `<div class="check"><input type="checkbox" ${checked?"checked":""} ${closed||S.role!=="DP"?"disabled":""} onchange="toggleDP(${i},this.checked)">
+ <div style="flex:1"><b>${i+1}. ${item}</b><small>${checked?"Concluído":"Pendente"} ${c.evidence[i]?`• Evidência: ${esc(c.evidence[i])}`:"• Sem anexo"}</small></div>
+ ${!closed&&S.role==="DP"?`<button class="btn secondary" onclick="itemEvidence(${i})">Evidência</button>`:""}
+ </div>`;
+ }).join("");
+ html+=`<div class="row" style="margin-top:16px">`;
+ if(!closed&&S.role==="DP") html+=`<button class="btn primary" onclick="finishDP()">Concluir Fechamento</button><button class="btn secondary" onclick="completeAllDP()">Teste 24/24</button>`;
+ if(closed&&S.role==="DP") html+=`<button class="btn warn" onclick="requestReopen()">Solicitar Reabertura</button>`;
+ if(closed&&S.role==="GERENCIA") html+=`<button class="btn primary" onclick="authorizeReopen()">Autorizar Reabertura</button>`;
+ html+=`</div></div>`;
+ html+=`<div class="section card"><div class="title"><h2>Histórico do fechamento</h2></div><table><tr><th>Versão</th><th>Status</th><th>Data</th><th>Usuário</th><th>Motivo</th></tr>
+ <tr><td>${c.version}</td><td>${c.status}</td><td>${c.closedAt||"—"}</td><td>${c.closedAt?"Usuário DP":"—"}</td><td>${c.reopen?esc(c.reopen.reason):"—"}</td></tr></table></div>`;
+ v.innerHTML=html;
+}
+function toggleDP(i,val){if(S.role!=="DP"||S.closure.status==="closed")return;S.closure.done[i]=val;save();audit("ALTERAR_ITEM_FECHAMENTO","Fechamento","09/2026",`${i+1} - ${dpItems[i]} = ${val?"Concluído":"Pendente"}`);go("dp")}
+function itemEvidence(i){
+ modal("Evidência — item "+(i+1),`<label>Nome do arquivo/comprovante</label><input id="ev" style="width:100%" value="${esc(S.closure.evidence[i]||"")}"><label style="display:block;margin-top:10px">Observação</label><textarea id="eno">${esc(S.closure.notes[i]||"")}</textarea><div class="right" style="margin-top:12px"><button class="btn primary" onclick="saveEvidence(${i})">Salvar</button></div>`);
+}
+function saveEvidence(i){S.closure.evidence[i]=document.getElementById("ev").value;S.closure.notes[i]=document.getElementById("eno").value;save();audit("EVIDENCIA_FECHAMENTO","Fechamento","09/2026",`Item ${i+1}`);closeModal();go("dp")}
+function completeAllDP(){if(S.role!=="DP")return;S.closure.done=Array(24).fill(true);save();audit("TESTE_24_24","Fechamento","09/2026","Todos os itens marcados");go("dp")}
 function finishDP(){
- if(state.closed)return;
- const done=state.done.filter(Boolean).length;
- if(done<24){showModal('Fechamento bloqueado',`Ainda existem <b>${24-done}</b> itens obrigatórios pendentes.<br><br>O DP só pode concluir a competência quando os 24 itens estiverem concluídos.`);return}
- state.closed=true;state.closedAt=new Date().toLocaleString('pt-BR');save();
- showModal('Fechamento concluído','A competência <b>09/2026</b> foi encerrada pelo DP.<br><br>A Gerência poderá apenas consultar e monitorar o fechamento.');
+ if(S.role!=="DP")return;
+ const done=S.closure.done.filter(Boolean).length;if(done<24){modal("Fechamento bloqueado",`Existem <b>${24-done}</b> itens pendentes. O fechamento exige 24/24.`);return}
+ if(!S.closure.done[23]){modal("Liberação pendente","O item 24 — Confirmação de liberação — deve estar concluído.");return}
+ S.closure.status="closed";S.closure.closedAt=now();S.closure.reopen=null;save();audit("CONCLUIR_FECHAMENTO","Fechamento","09/2026",`Fechamento nº ${S.closure.version}`);go("dp");modal("Fechamento concluído","A competência 09/2026 foi fechada pelo DP. A Gerência somente monitora.");
 }
-function reopen(){
- showModal('Competência fechada','Para a homologação, a reabertura ficará restrita à administração do sistema e será registrada em auditoria.'); 
+function requestReopen(){
+ if(S.role!=="DP")return;
+ modal("Solicitar reabertura",`<p>Informe obrigatoriamente o motivo.</p><textarea id="rr"></textarea><div class="right" style="margin-top:10px"><button class="btn primary" onclick="sendReopen()">Enviar solicitação</button></div>`);
 }
-function show(id,btn){
- document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
- document.getElementById(id).classList.remove('hidden');
- document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
- if(btn)btn.classList.add('active');
- const titles={dashboard:'Dashboard',dp:'DP / Fechamento',colab:'Colaboradores 360°',aso:'ASO',ferias:'Férias e Afastamentos',docs:'Documentos Obrigatórios',fiscal:'Fiscalização',rel:'Relatórios',audit:'Auditoria',config:'Configurações'};
- document.getElementById('pageTitle').textContent=titles[id];
+function sendReopen(){
+ const r=document.getElementById("rr").value.trim();if(!r){modal("Obrigatório","Informe a justificativa.");return}
+ S.closure.reopen={state:"requested",reason:r,requestedAt:now(),requestedBy:S.user};save();audit("SOLICITAR_REABERTURA","Fechamento","09/2026",r);closeModal();go("dp");
 }
-function showModal(t,b){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modal').classList.remove('hidden')}
-function closeModal(){document.getElementById('modal').classList.add('hidden')}
-const sample=[
-["000331","Manoel Junior Oliveira Farias","Administração","Ativo"],
-["000332","Luis Henrique Furtado da Silva","Administração","Ativo"],
-["000333","Antonia Walesca Souza de Lima","Esporte / Academia","Ativo"],
-["000334","Aires Silva dos Santos","Segurança","Ativo"],
-["000335","Wanicy Aragao Simoes","Segurança","Ativo"],
-["000336","Samuel Oliveira Monteiro","Segurança","Ativo"],
-["000337","Rodrigo Alexandre da Silva Costa","Segurança","Ativo"],
-["000338","Arlyson de Leão Cavalcante","Segurança","Ativo"],
-["000339","Joyce Renata Damasceno da Silva","Segurança","Ativo"],
-["000340","Midiã Tamara Campos de Castro","Segurança","Ativo"]
-];
-function renderColab(list=sample){
- document.getElementById('colabTable').innerHTML=list.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="status s-ok">${r[3]}</span></td><td><button class="btn blue" onclick="showModal('Colaborador 360°','${r[1]}<br><br>Setor: ${r[2]}<br>Status: ${r[3]}<br><br>Perfil central de consulta.')</button></td></tr>`).join('');
+function authorizeReopen(){
+ if(S.role!=="GERENCIA")return;
+ if(!S.closure.reopen||S.closure.reopen.state!=="requested"){modal("Sem solicitação","Não existe solicitação de reabertura pendente.");return}
+ const reason=S.closure.reopen.reason;
+ modal("Autorizar reabertura",`<p>Solicitação: <b>${esc(reason)}</b></p><p>Selecione os itens que deverão voltar a pendente.</p><div id="reopenItems">${dpItems.map((x,i)=>`<label class="check"><input type="checkbox" data-ri="${i}"> <span>${i+1}. ${x}</span></label>`).join("")}</div><div class="right" style="margin-top:12px"><button class="btn primary" onclick="confirmReopen()">Autorizar</button></div>`);
 }
-function filterColab(q){q=q.toLowerCase();renderColab(sample.filter(r=>r.join(' ').toLowerCase().includes(q)))}
-renderColab();render();
+function confirmReopen(){
+ const idx=[...document.querySelectorAll("[data-ri]:checked")].map(x=>+x.dataset.ri);
+ if(!idx.length){modal("Seleção obrigatória","Selecione pelo menos um item para correção.");return}
+ idx.forEach(i=>S.closure.done[i]=false);
+ S.closure.status="open";S.closure.reopen.state="authorized";S.closure.reopen.authorizedAt=now();S.closure.reopen.authorizedBy=S.user;S.closure.version++;
+ save();audit("AUTORIZAR_REABERTURA","Fechamento","09/2026",`Itens reabertos: ${idx.map(i=>i+1).join(", ")}`);closeModal();go("dp");
+}
+function employeesPage(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Colaboradores 360°</h2><span class="muted">${S.employees.length} cadastrados • salários não exibidos</span></div>
+ <div class="toolbar"><input id="eq" placeholder="Nome, código ou setor" oninput="renderEmployees()"><select id="es" onchange="renderEmployees()"><option>Todos</option><option>Ativo</option><option>Férias</option><option>Afastado/INSS</option><option>Aviso-prévio</option><option>Inativo</option></select>
+ ${S.role==="DP"?'<button class="btn primary" onclick="newEmployee()">Novo colaborador</button>':""}<button class="btn secondary" onclick="importEmployeeHelp()">Importar planilha</button></div><div id="empTable"></div></div>`;
+ renderEmployees();
+}
+function renderEmployees(){
+ const q=(document.getElementById("eq")?.value||"").toLowerCase(), st=document.getElementById("es")?.value||"Todos";
+ const arr=S.employees.filter(e=>(st==="Todos"||e.status===st)&&`${e.code} ${e.name} ${e.sector}`.toLowerCase().includes(q));
+ document.getElementById("empTable").innerHTML=`<table><tr><th>Código</th><th>Nome</th><th>Setor</th><th>Cargo</th><th>Status</th><th>Ações</th></tr>${arr.map(e=>`<tr><td>${e.code}</td><td>${esc(e.name)}</td><td>${esc(e.sector)}</td><td>${esc(e.cargo)}</td><td><span class="tag ${e.status==="Ativo"?"ok":e.status==="Inativo"?"red":"warn"}">${e.status}</span></td><td><button class="btn blue" onclick="profile('${e.code}')">360°</button></td></tr>`).join("")}</table>`;
+}
+function profile(code){
+ const e=S.employees.find(x=>x.code===code);if(!e)return;
+ const aso=S.aso.filter(a=>a.code===code),va=S.vacations.filter(a=>a.code===code),ab=S.absences.filter(a=>a.code===code),docs=S.docs.filter(d=>d.employeeCode===code);
+ modal("Colaborador 360°",`<div class="card"><b>${esc(e.name)}</b><p>${e.code} • ${esc(e.sector)} • ${esc(e.cargo)}</p><p>Status: <span class="tag ${e.status==="Ativo"?"ok":"warn"}">${e.status}</span></p><p>Admissão: ${e.admission||"—"}</p></div>
+ <h4>ASO</h4><p>${aso.length} registro(s)</p><h4>Férias</h4><p>${va.length} registro(s)</p><h4>Afastamentos</h4><p>${ab.length} registro(s)</p><h4>Documentos</h4><p>${docs.length} registro(s)</p>
+ <h4>Timeline</h4><p>${(e.timeline||[]).map(x=>esc(x)).join("<br>")||"Sem eventos"}</p>`);
+}
+function newEmployee(){
+ modal("Novo colaborador",`<div class="two"><div><label>Código</label><input id="nc"></div><div><label>Nome</label><input id="nn"></div><div><label>Setor</label><input id="ns"></div><div><label>Cargo</label><input id="ng"></div><div><label>Admissão</label><input id="na"></div></div><div class="right" style="margin-top:12px"><button class="btn primary" onclick="saveEmployee()">Cadastrar</button></div>`);
+}
+function saveEmployee(){
+ const e={code:document.getElementById("nc").value.trim(),name:document.getElementById("nn").value.trim(),sector:document.getElementById("ns").value.trim(),cargo:document.getElementById("ng").value.trim(),status:"Ativo",admission:document.getElementById("na").value.trim(),timeline:[`Admitido/cadastrado em ${now()}`]};
+ if(!e.code||!e.name){modal("Dados obrigatórios","Informe código e nome.");return}
+ if(S.employees.some(x=>x.code===e.code)){modal("Duplicidade","Código já cadastrado.");return}
+ S.employees.push(e);save();audit("CRIAR_COLABORADOR","Colaborador",e.code,e.name);closeModal();go("employees");
+}
+function importEmployeeHelp(){modal("Importação de colaboradores","Para a carga inicial, utilize CSV/XLSX com validação de CPF, duplicidade e campos obrigatórios. Esta versão de homologação deixa o fluxo preparado para a importação real sem gravar dados incompletos.");}
+function aso(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>ASO</h2><span class="muted">Vencimento calculado pelo sistema</span></div>
+ <div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newASO()">Novo ASO</button>':""}<select id="af" onchange="renderASO()"><option>Todos</option><option>Válido</option><option>Vencendo</option><option>Vencido</option><option>Pendente</option></select></div><div id="asoTable"></div></div>`;renderASO();
+}
+function asoStatus(a){if(!a.date)return"Pendente";if(!a.next)return"Válido";const d=daysTo(a.next);return d<0?"Vencido":d<=90?"Vencendo":"Válido"}
+function renderASO(){const f=document.getElementById("af")?.value||"Todos";const arr=S.aso.filter(a=>f==="Todos"||asoStatus(a)===f);document.getElementById("asoTable").innerHTML=`<table><tr><th>Colaborador</th><th>Tipo</th><th>Data</th><th>Próximo vencimento</th><th>Status</th><th>Arquivo</th></tr>${arr.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${a.type}</td><td>${a.date||"—"}</td><td>${a.next||"—"}</td><td><span class="tag ${asoStatus(a)==="Válido"?"ok":asoStatus(a)==="Vencido"?"red":"warn"}">${asoStatus(a)}</span></td><td>${a.file?esc(a.file):"—"}</td></tr>`).join("")}</table>`}
+function newASO(){modal("Novo ASO",`<div class="two"><div><label>Colaborador</label><select id="ac">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)} — ${e.code}</option>`).join("")}</select></div><div><label>Tipo</label><select id="at"><option>Admissional</option><option>Periódico</option><option>Demissional</option><option>Retorno</option><option>Mudança de risco</option></select></div><div><label>Data</label><input id="ad" type="date"></div><div><label>Próximo vencimento</label><input id="an" type="date"></div><div><label>Arquivo</label><input id="afl"></div></div><p class="muted">Vencimento obrigatório em Periódico, Retorno e Mudança de risco; opcional em Admissional e Demissional.</p><div class="right"><button class="btn primary" onclick="saveASO()">Salvar</button></div>`)}
+function saveASO(){const type=document.getElementById("at").value,next=document.getElementById("an").value;if(["Periódico","Retorno","Mudança de risco"].includes(type)&&!next){modal("Obrigatório","Informe o próximo vencimento.");return}const a={code:document.getElementById("ac").value,type,date:document.getElementById("ad").value,next,file:document.getElementById("afl").value};S.aso.push(a);const e=S.employees.find(x=>x.code===a.code);e.timeline.push(`ASO ${a.type} lançado em ${now()}`);save();audit("CRIAR_ASO","ASO",a.code,a.type);closeModal();go("aso")}
+function vac(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Férias e Afastamentos</h2><span class="muted">Lançamentos ficam neste módulo</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newVac()">Nova férias</button><button class="btn warn" onclick="newAbs()">Novo afastamento/atestado</button>':""}</div>
+ <h3>Férias</h3><div id="vacTable"></div><h3>Afastamentos / Atestados</h3><div id="absTable"></div></div>`;
+ document.getElementById("vacTable").innerHTML=`<table><tr><th>Colaborador</th><th>Período aquisitivo</th><th>Concessivo</th><th>Início</th><th>Fim</th><th>Status</th><th>Pagamento</th></tr>${S.vacations.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${a.acq||"—"}</td><td>${a.conc||"—"}</td><td>${a.start}</td><td>${a.end}</td><td><span class="tag warn">${a.status}</span></td><td>${a.payment||"Pendente"}</td></tr>`).join("")}</table>`;
+ document.getElementById("absTable").innerHTML=`<table><tr><th>Colaborador</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Status</th><th>Evidência</th></tr>${S.absences.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${a.type}</td><td>${a.start}</td><td>${a.end||"—"}</td><td>${a.status}</td><td>${a.file||"—"}</td></tr>`).join("")}</table>`;
+}
+function newVac(){modal("Nova férias",`<div class="two"><div><label>Colaborador</label><select id="vc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Período aquisitivo</label><input id="vaq" placeholder="Ex.: 01/10/2025–30/09/2026"></div><div><label>Período concessivo</label><input id="vco" placeholder="Ex.: 01/10/2026–30/09/2027"></div><div><label>Início</label><input id="vs" type="date"></div><div><label>Fim</label><input id="ve" type="date"></div><div><label>Pagamento/cálculo</label><input id="vp" placeholder="Pago / Pendente / referência"></div><div><label>Evidência</label><input id="vf"></div></div><div class="right"><button class="btn primary" onclick="saveVac()">Salvar</button></div>`)}
+function saveVac(){const a={code:vc.value,acq:vaq.value,conc:vco.value,start:vs.value,end:ve.value,status:"Programado",payment:vp.value,file:vf.value};if(!a.start||!a.end){modal("Obrigatório","Informe início e fim.");return}S.vacations.push(a);save();audit("CRIAR_FERIAS","Férias",a.code,`${a.start} a ${a.end}`);closeModal();go("vac")}
+function newAbs(){modal("Novo afastamento / atestado",`<div class="two"><div><label>Colaborador</label><select id="xc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Tipo</label><select id="xt"><option>Afastamento INSS</option><option>Atestado</option><option>Outros</option></select></div><div><label>Início</label><input id="xs" type="date"></div><div><label>Fim</label><input id="xe" type="date"></div><div><label>Evidência</label><input id="xf"></div><div><label>Observação</label><input id="xo"></div></div><p class="muted">Não registrar diagnóstico. CID, quando necessário, fica restrito a perfil autorizado.</p><div class="right"><button class="btn primary" onclick="saveAbs()">Salvar</button></div>`)}
+function saveAbs(){const a={code:xc.value,type:xt.value,start:xs.value,end:xe.value,status:"Em andamento",file:xf.value,note:xo.value};if(a.type==="Afastamento INSS"&&!a.file){modal("Evidência obrigatória","Afastamento INSS exige evidência.");return}S.absences.push(a);const e=S.employees.find(x=>x.code===a.code);if(a.type==="Afastamento INSS")e.status="Afastado/INSS";e.timeline.push(`${a.type} lançado em ${now()}`);save();audit("CRIAR_AFASTAMENTO","Afastamento",a.code,a.type);closeModal();go("vac")}
+function docs(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Documentos Obrigatórios</h2><span class="muted">Institucionais e documentos de colaboradores</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newDoc()">Novo documento</button>':""}<select id="df" onchange="renderDocs()"><option>Todos</option><option>Institucional</option><option>Colaborador</option></select></div><div id="docTable"></div></div>`;renderDocs();
+}
+function daysTo(s){if(!s)return 99999;const d=new Date(s+"T00:00:00");return Math.ceil((d-new Date())/86400000)}
+function docStatus(d){if(!d.exp)return"Sem validade";const n=daysTo(d.exp);return n<0?"Vencido":n<=90?"Vencendo":"Válido"}
+function renderDocs(){const f=document.getElementById("df")?.value||"Todos";const arr=S.docs.filter(d=>f==="Todos"||d.category===f);document.getElementById("docTable").innerHTML=`<table><tr><th>Documento</th><th>Categoria</th><th>Vinculado</th><th>Validade</th><th>Status</th><th>Responsável</th><th>Arquivo</th></tr>${arr.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.category}</td><td>${d.employeeCode?esc(empName(d.employeeCode)):"Institucional"}</td><td>${d.exp||"—"}</td><td><span class="tag ${docStatus(d)==="Válido"?"ok":docStatus(d)==="Vencido"?"red":"warn"}">${docStatus(d)}</span></td><td>${esc(d.owner||"—")}</td><td>${esc(d.file||"—")}</td></tr>`).join("")}</table>`}
+function newDoc(){modal("Novo documento",`<div class="two"><div><label>Nome</label><input id="dn"></div><div><label>Categoria</label><select id="dc"><option>Institucional</option><option>Colaborador</option></select></div><div><label>Colaborador (se aplicável)</label><select id="de"><option value="">Institucional</option>${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Número</label><input id="dnum"></div><div><label>Órgão emissor</label><input id="do"></div><div><label>Emissão</label><input id="di" type="date"></div><div><label>Validade</label><input id="dx" type="date"></div><div><label>Responsável</label><input id="dresp"></div><div><label>Substituto</label><input id="dsub"></div><div><label>Arquivo</label><input id="dfi"></div></div><div class="right"><button class="btn primary" onclick="saveDoc()">Salvar</button></div>`)}
+function saveDoc(){const d={id:"D"+(S.docs.length+1),name:dn.value,category:dc.value,employeeCode:de.value,number:dnum.value,issuer:do.value,issue:di.value,exp:dx.value,owner:dresp.value,substitute:dsub.value,file:dfi.value,history:[]};if(!d.name){modal("Obrigatório","Informe o nome do documento.");return}S.docs.push(d);save();audit("CRIAR_DOCUMENTO","Documento",d.id,d.name);closeModal();go("docs")}
+function fiscal(){
+ const inst=S.docs.filter(d=>d.category==="Institucional");
+ v.innerHTML=`<div class="card"><div class="title"><h2>Modo Fiscalização</h2><span class="muted">Somente documentos institucionais</span></div>
+ <div class="notice info">Acesso somente leitura. Também é possível gerar link temporário com validade curta. Todo acesso é auditado.</div>
+ <div class="toolbar">${S.role!=="FISCAL"?'<button class="btn primary" onclick="newFiscalLink()">Gerar link temporário</button>':""}</div>
+ <table><tr><th>Documento</th><th>Validade</th><th>Status</th><th>Arquivo</th></tr>${inst.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.exp||"—"}</td><td>${docStatus(d)}</td><td>${esc(d.file||"Não anexado")}</td></tr>`).join("")}</table></div>
+ <div class="section card"><h3>Links temporários</h3>${S.fiscalLinks.length?`<table><tr><th>Token</th><th>Validade</th><th>Status</th></tr>${S.fiscalLinks.map(x=>`<tr><td>${x.token}</td><td>${x.until}</td><td>${new Date(x.until)>new Date()?"Ativo":"Expirado"}</td></tr>`).join("")}</table>`:"Nenhum link gerado."}</div>`;
+}
+function newFiscalLink(){const until=new Date(Date.now()+30*60000);const x={token:"FISC-"+Math.random().toString(36).slice(2,10).toUpperCase(),until:until.toISOString()};S.fiscalLinks.push(x);save();audit("GERAR_LINK_FISCAL","Fiscalização",x.token,`Validade ${until.toLocaleString("pt-BR")}`);go("fiscal");modal("Link temporário gerado",`Token: <b>${x.token}</b><br>Validade: ${until.toLocaleString("pt-BR")}<br><br>Na versão de produção, o token será gerado pelo backend e poderá ser revogado a qualquer momento.`)}
+function reports(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Relatórios</h2><span class="muted">Exportação controlada</span></div><div class="grid">
+ ${["Fechamento mensal","Colaboradores","Férias","Afastamentos/Atestados","ASO","Documentos","Admissões/Desligamentos","Auditoria"].map((x,i)=>`<div class="card"><b>${x}</b><p class="muted">Consulta e exportação conforme permissão.</p><button class="btn secondary" onclick="exportReport('${x}')">Exportar CSV</button></div>`).join("")}</div>
+ <div class="notice info">Toda exportação é registrada na auditoria. Relatórios de saúde ocupacional ficam restritos a perfis autorizados e não exibem diagnóstico no painel gerencial.</div></div>`;
+}
+function exportReport(name){if(S.role==="GERENCIA"&&name==="ASO"){audit("EXPORTAR_RELATORIO","Relatório",name,"Situação de ASO");downloadCSV(name,[["Colaborador","Tipo","Data","Vencimento","Status"],...S.aso.map(a=>[empName(a.code),a.type,a.date,a.next,asoStatus(a)])]);return}
+ audit("EXPORTAR_RELATORIO","Relatório",name,"CSV");downloadCSV(name,[["Nome","Código","Setor","Status"],...S.employees.map(e=>[e.name,e.code,e.sector,e.status])])}
+function downloadCSV(name,rows){const csv=rows.map(r=>r.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download=name.replace(/[^\w]+/g,"_")+".csv";a.click()}
+function auditsPage(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Auditoria</h2><span class="muted">Registros somente de inserção</span></div><div class="notice info">Nenhum perfil pode editar ou excluir registros de auditoria nesta homologação.</div>
+ <table><tr><th>ID</th><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Registro</th><th>Detalhes</th></tr>${S.audits.slice().reverse().map(a=>`<tr><td>${a.id}</td><td>${a.at}</td><td>${esc(a.user)}</td><td>${a.action}</td><td>${a.entity}</td><td>${esc(a.record)}</td><td>${esc(a.details)}</td></tr>`).join("")}</table></div>`;
+}
+function usersPage(){
+ v.innerHTML=`<div class="card"><div class="title"><h2>Usuários e Permissões</h2><span class="muted">Admin TI administra</span></div><div class="notice info">Senha provisória e redefinição são administrativas. Conta bloqueia após 5 tentativas inválidas. Não há expiração automática por inatividade.</div>
+ ${S.role==="ADMIN"?'<button class="btn primary" onclick="newUser()">Novo usuário</button>':""}
+ <table style="margin-top:12px"><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ação</th></tr>${S.users.map((u,i)=>`<tr><td>${esc(u.name)}</td><td>${u.role}</td><td>${u.active?"Ativo":"Inativo"}</td><td>${S.role==="ADMIN"?`<button class="btn secondary" onclick="toggleUser(${i})">${u.active?"Inativar":"Ativar"}</button>`:"—"}</td></tr>`).join("")}</table></div>`;
+}
+function newUser(){modal("Novo usuário",`<div class="two"><div><label>Nome</label><input id="un"></div><div><label>Perfil</label><select id="ur"><option>DP</option><option>GERENCIA</option><option>FISCAL</option><option>ADMIN</option></select></div></div><div class="right"><button class="btn primary" onclick="saveUser()">Criar</button></div>`)}
+function saveUser(){const u={name:un.value.trim(),role:ur.value,active:true};if(!u.name){modal("Obrigatório","Informe o nome.");return}S.users.push(u);save();audit("CRIAR_USUARIO","Usuário",u.name,u.role);closeModal();go("users")}
+function toggleUser(i){S.users[i].active=!S.users[i].active;save();audit("ALTERAR_USUARIO","Usuário",S.users[i].name,S.users[i].active?"Ativado":"Inativado");go("users")}
+function empName(code){return S.employees.find(e=>e.code===code)?.name||code}
+nav();go("dashboard");
 </script>
 </body>
 </html>
