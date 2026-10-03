@@ -266,20 +266,63 @@ function vac(){
  document.getElementById("vacTable").innerHTML=`<table><tr><th>Colaborador</th><th>Período aquisitivo</th><th>Concessivo</th><th>Início</th><th>Fim</th><th>Status</th><th>Pagamento</th><th>Evidência</th></tr>${S.vacations.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${esc(a.acq||"—")}</td><td>${esc(a.conc||"—")}</td><td>${esc(a.start||"—")}</td><td>${esc(a.end||"—")}</td><td><span class="tag ${a.status==="Concluída"?"ok":a.status==="Pendente"?"warn":"blue"}">${esc(a.status||"Pendente")}</span></td><td>${esc(a.payment||"Pendente")}</td><td>${a.dataUrl?`<a href="${a.dataUrl}" target="_blank" rel="noopener" download="${esc(a.fileName)}">${esc(a.fileName)}</a>`:(a.fileName?esc(a.fileName):"—")}</td></tr>`).join("")||'<tr><td colspan="8" class="muted">Nenhuma férias registrada.</td></tr>'}</table>`;
  document.getElementById("absTable").innerHTML=`<table><tr><th>Colaborador</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Status</th><th>Evidência</th></tr>${S.absences.map(a=>`<tr><td>${esc(empName(a.code))}</td><td>${esc(a.type||"Afastamento/Atestado")}</td><td>${esc(a.start||"—")}</td><td>${esc(a.end||"—")}</td><td><span class="tag ${a.status==="Concluído"?"ok":a.status==="Pendente"?"warn":"blue"}">${esc(a.status||"Pendente")}</span></td><td>${a.dataUrl?`<a href="${a.dataUrl}" target="_blank" rel="noopener" download="${esc(a.fileName)}">${esc(a.fileName)}</a>`:(a.fileName?esc(a.fileName):"—")}</td></tr>`).join("")||'<tr><td colspan="6" class="muted">Nenhum afastamento/atestado registrado.</td></tr>'}</table>`;
 }
+function parseBRDate(s){
+ const p=String(s||"").split("/");
+ if(p.length!==3)return null;
+ const d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]));
+ return isNaN(d.getTime())?null:d;
+}
+function fmtBRDate(d){
+ return d?String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear():"";
+}
+function addYearsSafe(d,n){
+ const x=new Date(d.getTime());
+ const target=x.getFullYear()+n;
+ x.setFullYear(target);
+ if(x.getMonth()!==d.getMonth())x.setDate(0);
+ return x;
+}
+function minusDays(d,n){
+ const x=new Date(d.getTime());x.setDate(x.getDate()-n);return x;
+}
+function calcVacationPeriods(code){
+ const e=S.employees.find(x=>x.code===code);
+ const adm=parseBRDate(e?.admission);
+ if(!adm)return {acq:"",conc:""};
+ const today=new Date();today.setHours(0,0,0,0);
+ let years=today.getFullYear()-adm.getFullYear();
+ let anniversary=addYearsSafe(adm,years);
+ if(anniversary>today){years--;anniversary=addYearsSafe(adm,years)}
+ const acqStart=anniversary;
+ const acqEnd=minusDays(addYearsSafe(acqStart,1),1);
+ const concStart=addYearsSafe(acqStart,1);
+ const concEnd=minusDays(addYearsSafe(concStart,1),1);
+ return {acq:`${fmtBRDate(acqStart)} – ${fmtBRDate(acqEnd)}`,conc:`${fmtBRDate(concStart)} – ${fmtBRDate(concEnd)}`};
+}
+function fillVacationPeriods(){
+ const p=calcVacationPeriods(document.getElementById("vc")?.value);
+ const a=document.getElementById("vaq"),c=document.getElementById("vco");
+ if(a)a.value=p.acq;
+ if(c)c.value=p.conc;
+}
 function newVac(){
  modal("Nova férias",`<div class="two">
  <div><label>Colaborador</label><select id="vc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)} — ${e.code}</option>`).join("")}</select></div>
- <div><label>Período aquisitivo</label><input id="vaq" placeholder="Ex.: 01/10/2025–30/09/2026"></div>
- <div><label>Período concessivo</label><input id="vco" placeholder="Ex.: 01/10/2026–30/09/2027"></div>
- <div><label>Início</label><input id="vst" type="date"></div>
- <div><label>Fim</label><input id="ven" type="date"></div>
+ <div><label>Período aquisitivo <span class="muted">(calculado)</span></label><input id="vaq" readonly style="background:#f4f6f4" title="Calculado automaticamente pela data de admissão"></div>
+ <div><label>Período concessivo <span class="muted">(calculado)</span></label><input id="vco" readonly style="background:#f4f6f4" title="Calculado automaticamente pela data de admissão"></div>
+ <div><label>Início das férias</label><input id="vst" type="date"></div>
+ <div><label>Fim das férias</label><input id="ven" type="date"></div>
  <div><label>Pagamento/cálculo</label><input id="vpay" placeholder="Pago / Pendente / referência"></div>
  <div style="grid-column:1/-1"><label>Evidência / comprovante</label>
    <input id="vfile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/*" style="width:100%;min-width:0;padding:8px;cursor:pointer">
    <div id="vfileName" class="muted" style="margin-top:5px">Nenhum arquivo selecionado</div>
  </div>
  </div>
+ <p class="muted">O período aquisitivo e o concessivo são calculados automaticamente com base na data de admissão do colaborador.</p>
  <div class="right" style="margin-top:12px"><button class="btn primary" onclick="saveVac()">Salvar</button></div>`);
+ fillVacationPeriods();
+ const sel=document.getElementById("vc");
+ if(sel)sel.addEventListener("change",fillVacationPeriods);
  const f=document.getElementById("vfile"),n=document.getElementById("vfileName");
  if(f&&n)f.addEventListener("change",()=>n.textContent=f.files?.[0]?.name||"Nenhum arquivo selecionado");
 }
@@ -318,10 +361,6 @@ function saveAbs(){
  if(file){if(file.size>8*1024*1024){modal("Arquivo muito grande","Para a homologação, use arquivo de até 8 MB.");return}const rd=new FileReader();rd.onload=()=>{rec.dataUrl=rd.result;finish()};rd.readAsDataURL(file)}else finish();
 }
 
-function newVac(){modal("Nova férias",`<div class="two"><div><label>Colaborador</label><select id="vc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Período aquisitivo</label><input id="vaq" placeholder="Ex.: 01/10/2025–30/09/2026"></div><div><label>Período concessivo</label><input id="vco" placeholder="Ex.: 01/10/2026–30/09/2027"></div><div><label>Início</label><input id="vs" type="date"></div><div><label>Fim</label><input id="ve" type="date"></div><div><label>Pagamento/cálculo</label><input id="vp" placeholder="Pago / Pendente / referência"></div><div><label>Evidência</label><input id="vf"></div></div><div class="right"><button class="btn primary" onclick="saveVac()">Salvar</button></div>`)}
-function saveVac(){const a={code:vc.value,acq:vaq.value,conc:vco.value,start:vs.value,end:ve.value,status:"Programado",payment:vp.value,file:vf.value};if(!a.start||!a.end){modal("Obrigatório","Informe início e fim.");return}S.vacations.push(a);save();audit("CRIAR_FERIAS","Férias",a.code,`${a.start} a ${a.end}`);closeModal();go("vac")}
-function newAbs(){modal("Novo afastamento / atestado",`<div class="two"><div><label>Colaborador</label><select id="xc">${S.employees.map(e=>`<option value="${e.code}">${esc(e.name)}</option>`).join("")}</select></div><div><label>Tipo</label><select id="xt"><option>Afastamento INSS</option><option>Atestado</option><option>Outros</option></select></div><div><label>Início</label><input id="xs" type="date"></div><div><label>Fim</label><input id="xe" type="date"></div><div><label>Evidência</label><input id="xf"></div><div><label>Observação</label><input id="xo"></div></div><p class="muted">Não registrar diagnóstico. CID, quando necessário, fica restrito a perfil autorizado.</p><div class="right"><button class="btn primary" onclick="saveAbs()">Salvar</button></div>`)}
-function saveAbs(){const a={code:xc.value,type:xt.value,start:xs.value,end:xe.value,status:"Em andamento",file:xf.value,note:xo.value};if(a.type==="Afastamento INSS"&&!a.file){modal("Evidência obrigatória","Afastamento INSS exige evidência.");return}S.absences.push(a);const e=S.employees.find(x=>x.code===a.code);if(a.type==="Afastamento INSS")e.status="Afastado/INSS";e.timeline.push(`${a.type} lançado em ${now()}`);save();audit("CRIAR_AFASTAMENTO","Afastamento",a.code,a.type);closeModal();go("vac")}
 function docs(){
  viewEl.innerHTML=`<div class="card"><div class="title"><h2>Documentos Obrigatórios</h2><span class="muted">Institucionais e documentos de colaboradores</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newDoc()">Novo documento</button>':""}<select id="df" onchange="renderDocs()"><option>Todos</option><option>Institucional</option><option>Colaborador</option></select></div><div id="docTable"></div></div>`;renderDocs();
 }
