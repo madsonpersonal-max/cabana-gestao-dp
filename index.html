@@ -463,28 +463,36 @@ function reports(){
 function exportReport(name){
  let headers=[],rows=[];
  if(name==="Fechamento mensal"){
-   headers=["Competência","Status","DP","Financeiro","Gerência","Data de fechamento","Usuário"];
-   const hist=S.closures||[];
-   rows=hist.map(x=>[x.competence||x.month||"",x.status||"",x.dpPct??x.dp??"",x.finPct??x.financePct??x.finance??"",x.management||x.gerencia||"",x.closedAt||x.at||"",x.user||""]);
+   headers=["Competência","Status","DP","Financeiro","Gerência","Data de fechamento","Versão","Usuário"];
+   const c=S.closure||{};
+   const dp=Math.round((c.done||[]).filter(Boolean).length/24*100);
+   const fin=(typeof S.financeCompleted==="boolean"?S.financeCompleted:false) ? 100 : "";
+   const status=c.status==="closed"?"Fechado":c.status==="reopened"?"Reaberto":"Em andamento";
+   rows=[["09/2026",status,dp,fin,status==="Fechado"?"Aprovado":status,c.closedAt||"",c.version||1,S.user||""]];
  }else if(name==="Colaboradores"){
    headers=["Nome","Código","Setor","Cargo","Status","Admissão"];
-   rows=(S.employees||[]).map(e=>[e.name,e.code,e.sector,e.role||e.cargo||"",e.status,e.admission||""]);
+   rows=(S.employees||[]).map(e=>[e.name,e.code,e.sector||e.dept||"",e.cargo||"",e.status||"",e.admission||""]);
  }else if(name==="Férias"){
    headers=["Colaborador","Código","Período aquisitivo","Período concessivo","Início","Fim","Status","Pagamento/Cálculo","Evidência"];
-   rows=(S.vacations||S.va||[]).map(a=>[empName(a.code),a.code,a.acq||"",a.conc||"",a.start||"",a.end||"",a.status||"",a.payment||"",a.fileName||a.file||""]);
+   rows=(S.vacations||[]).map(a=>[empName(a.code),a.code,a.acq||"",a.conc||"",a.start||"",a.end||"",a.status||"",a.payment||"Pendente",a.fileName||""]);
  }else if(name==="Afastamentos/Atestados"){
    headers=["Colaborador","Código","Tipo","Início","Fim","Status","Evidência"];
-   rows=(S.absences||S.ab||[]).map(a=>[empName(a.code),a.code,a.type||"",a.start||"",a.end||"",a.status||"",a.fileName||a.file||""]);
+   rows=(S.absences||[]).map(a=>[empName(a.code),a.code,a.type||"",a.start||"",a.end||"",a.status||"",a.fileName||""]);
  }else if(name==="ASO"){
    if(!["GERENCIA","DP","ADMIN"].includes(S.role)){modal("Acesso restrito","Este relatório é permitido apenas a perfis autorizados.");return}
    headers=["Colaborador","Código","Tipo","Data","Próximo vencimento","Status","Arquivo"];
-   rows=(S.aso||[]).map(a=>[empName(a.code),a.code,a.type||"",a.date||"",a.next||"",asoStatus(a),a.fileName||a.file||""]);
+   rows=(S.aso||[]).map(a=>[empName(a.code),a.code,a.type||"",a.date||"",a.next||"",asoStatus(a),a.fileName||""]);
  }else if(name==="Documentos"){
    headers=["Documento","Categoria","Vinculado","Número","Órgão emissor","Emissão","Validade","Status","Responsável","Substituto","Arquivo"];
-   rows=(S.docs||[]).map(d=>[d.name||"",d.category||"",d.employeeCode?empName(d.employeeCode):"Institucional",d.number||"",d.issuer||"",d.issue||"",d.expiry||d.exp||"",docStatus(d),d.responsible||d.owner||"",d.substitute||"",d.fileName||d.file||""]);
+   rows=(S.docs||[]).map(d=>[d.name||"",d.category||"Institucional",d.employeeCode?empName(d.employeeCode):"Institucional",d.number||"",d.issuer||"",d.issue||"",d.expiry||"",docStatus(d),d.responsible||"",d.substitute||"",d.fileName||""]);
  }else if(name==="Admissões/Desligamentos"){
-   headers=["Nome","Código","Setor","Status","Admissão","Data desligamento","Motivo"];
-   rows=(S.employees||[]).map(e=>[e.name,e.code,e.sector,e.status,e.admission||"",e.dismissal?.date||e.demissao?.date||"",e.dismissal?.reason||e.demissao?.reason||""]);
+   headers=["Nome","Código","Setor","Cargo","Admissão","Data desligamento","Tipo desligamento","Motivo","Status"];
+   const byCode={};
+   (S.terminations||[]).forEach(t=>{byCode[t.code]=t});
+   rows=(S.employees||[]).filter(e=>e.admission||e.terminationDate||byCode[e.code]).map(e=>{
+     const t=byCode[e.code]||{};
+     return [e.name,e.code,e.sector||e.dept||"",e.cargo||"",e.admission||"",e.terminationDate||t.date||"",e.terminationType||t.type||"",t.reason||"",e.status||""];
+   });
  }else if(name==="Auditoria"){
    headers=["ID","Data/hora","Usuário","Ação","Entidade","Registro","Detalhes"];
    rows=(S.audits||[]).map(a=>[a.id,a.at,a.user,a.action,a.entity,a.record,a.details]);
