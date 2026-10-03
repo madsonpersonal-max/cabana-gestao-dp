@@ -364,8 +364,20 @@ function docs(){
  viewEl.innerHTML=`<div class="card"><div class="title"><h2>Documentos Obrigatórios</h2><span class="muted">Institucionais e documentos de colaboradores</span></div><div class="toolbar">${S.role==="DP"?'<button class="btn primary" onclick="newDoc()">Novo documento</button>':""}<select id="df" onchange="renderDocs()"><option>Todos</option><option>Institucional</option><option>Colaborador</option></select></div><div id="docTable"></div></div>`;renderDocs();
 }
 function daysTo(s){if(!s)return 99999;const d=new Date(s+"T00:00:00");return Math.ceil((d-new Date())/86400000)}
-function docStatus(d){if(!d.exp)return"Sem validade";const n=daysTo(d.exp);return n<0?"Vencido":n<=90?"Vencendo":"Válido"}
-function renderDocs(){const f=document.getElementById("df")?.value||"Todos";const arr=S.docs.filter(d=>f==="Todos"||d.category===f);document.getElementById("docTable").innerHTML=`<table><tr><th>Documento</th><th>Categoria</th><th>Vinculado</th><th>Validade</th><th>Status</th><th>Responsável</th><th>Arquivo</th></tr>${arr.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.category}</td><td>${d.employeeCode?esc(empName(d.employeeCode)):"Institucional"}</td><td>${d.exp||"—"}</td><td><span class="tag ${docStatus(d)==="Válido"?"ok":docStatus(d)==="Vencido"?"red":"warn"}">${docStatus(d)}</span></td><td>${esc(d.owner||"—")}</td><td>${esc(d.file||"—")}</td></tr>`).join("")}</table>`}
+function docStatus(d){const exp=d.expiry||d.exp;if(!exp)return"Sem validade";const n=daysTo(exp);return n<0?"Vencido":n<=90?"Vencendo":"Válido"}
+function renderDocs(){
+ const f=document.getElementById("df")?.value||"Todos";
+ const arr=(S.docs||[]).filter(d=>f==="Todos"||d.category===f);
+ document.getElementById("docTable").innerHTML=`<table><tr><th>Documento</th><th>Categoria</th><th>Vinculado</th><th>Validade</th><th>Status</th><th>Responsável</th><th>Arquivo</th></tr>${arr.map(d=>`<tr>
+ <td>${esc(d.name||"—")}</td>
+ <td>${esc(d.category||"—")}</td>
+ <td>${d.employeeCode?esc(empName(d.employeeCode)):"Institucional"}</td>
+ <td>${esc(d.expiry||d.exp||"—")}</td>
+ <td><span class="tag ${docStatus(d)==="Válido"?"ok":docStatus(d)==="Vencido"?"red":"warn"}">${docStatus(d)}</span></td>
+ <td>${esc(d.responsible||d.owner||"—")}</td>
+ <td>${d.dataUrl?`<a href="${d.dataUrl}" target="_blank" rel="noopener" download="${esc(d.fileName||d.file||"documento")}">${esc(d.fileName||d.file||"Abrir documento")}</a>`:esc(d.fileName||d.file||"—")}</td>
+ </tr>`).join("")||'<tr><td colspan="7" class="muted">Nenhum documento cadastrado.</td></tr>'}</table>`;
+}
 function newDoc(){
  modal("Novo documento",`<div class="two">
  <div><label>Nome</label><input id="dn" placeholder="Ex.: Alvará de Funcionamento"></div>
@@ -390,46 +402,56 @@ function newDoc(){
 }
 function saveDoc(){
  const file=document.getElementById("dfile")?.files?.[0];
- const name=document.getElementById("dn").value.trim();
+ const name=document.getElementById("dn")?.value.trim();
  if(!name){modal("Campo obrigatório","Informe o nome do documento.");return}
- const val=document.getElementById("dval").value;
  if(file && file.size>8*1024*1024){modal("Arquivo muito grande","Para a homologação, use arquivo de até 8 MB.");return}
+
+ const employeeCode=document.getElementById("dcol")?.value||"";
+ const expiry=document.getElementById("dval")?.value||"";
  const rec={
-   id:Date.now(),
-   name,
-   category:document.getElementById("dc").value,
-   code:document.getElementById("dcol").value,
-   number:document.getElementById("dnum").value.trim(),
-   issuer:document.getElementById("dorg").value.trim(),
-   issue:document.getElementById("dem").value,
-   expiry:val,
-   responsible:document.getElementById("dresp").value.trim(),
-   substitute:document.getElementById("dsub").value.trim(),
+   id:"D"+(Date.now()),
+   name:name,
+   category:document.getElementById("dc")?.value||"Institucional",
+   employeeCode:employeeCode,
+   code:employeeCode,
+   number:document.getElementById("dnum")?.value.trim()||"",
+   issuer:document.getElementById("dorg")?.value.trim()||"",
+   issue:document.getElementById("dem")?.value||"",
+   expiry:expiry,
+   exp:expiry,
+   responsible:document.getElementById("dresp")?.value.trim()||"",
+   owner:document.getElementById("dresp")?.value.trim()||"",
+   substitute:document.getElementById("dsub")?.value.trim()||"",
    fileName:file?file.name:"",
+   file:file?file.name:"",
    dataUrl:""
  };
+
  const finish=()=>{
    S.docs=S.docs||[];
    S.docs.push(rec);
    save();
-   audit("CRIAR_DOCUMENTO","Documento",rec.number||rec.name,rec.name);
+   audit("CRIAR_DOCUMENTO","Documento",rec.id,rec.name);
    closeModal();
-   go("docs")
+   go("docs");
  };
+
  if(file){
-   const rd=new FileReader();
-   rd.onload=()=>{rec.dataUrl=rd.result;finish()};
-   rd.readAsDataURL(file);
- }else finish();
+   const reader=new FileReader();
+   reader.onload=()=>{rec.dataUrl=reader.result;finish()};
+   reader.onerror=()=>modal("Erro no arquivo","Não foi possível ler o arquivo selecionado.");
+   reader.readAsDataURL(file);
+ }else{
+   finish();
+ }
 }
 
-function saveDoc(){const d={id:"D"+(S.docs.length+1),name:dn.value,category:dc.value,employeeCode:de.value,number:dnum.value,issuer:dorg.value,issue:di.value,exp:dx.value,owner:dresp.value,substitute:dsub.value,file:dfi.value,history:[]};if(!d.name){modal("Obrigatório","Informe o nome do documento.");return}S.docs.push(d);save();audit("CRIAR_DOCUMENTO","Documento",d.id,d.name);closeModal();go("docs")}
 function fiscal(){
  const inst=S.docs.filter(d=>d.category==="Institucional");
  viewEl.innerHTML=`<div class="card"><div class="title"><h2>Modo Fiscalização</h2><span class="muted">Somente documentos institucionais</span></div>
  <div class="notice info">Acesso somente leitura. Também é possível gerar link temporário com validade curta. Todo acesso é auditado.</div>
  <div class="toolbar">${S.role!=="FISCAL"?'<button class="btn primary" onclick="newFiscalLink()">Gerar link temporário</button>':""}</div>
- <table><tr><th>Documento</th><th>Validade</th><th>Status</th><th>Arquivo</th></tr>${inst.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.exp||"—"}</td><td>${docStatus(d)}</td><td>${esc(d.file||"Não anexado")}</td></tr>`).join("")}</table></div>
+ <table><tr><th>Documento</th><th>Validade</th><th>Status</th><th>Arquivo</th></tr>${inst.map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.expiry||d.exp||"—")}</td><td>${docStatus(d)}</td><td>${d.dataUrl?`<a href="${d.dataUrl}" target="_blank" rel="noopener" download="${esc(d.fileName||d.file||"documento")}">${esc(d.fileName||d.file)}</a>`:esc(d.fileName||d.file||"Não anexado")}</td></tr>`).join("")}</table></div>
  <div class="section card"><h3>Links temporários</h3>${S.fiscalLinks.length?`<table><tr><th>Token</th><th>Validade</th><th>Status</th></tr>${S.fiscalLinks.map(x=>`<tr><td>${x.token}</td><td>${x.until}</td><td>${new Date(x.until)>new Date()?"Ativo":"Expirado"}</td></tr>`).join("")}</table>`:"Nenhum link gerado."}</div>`;
 }
 function newFiscalLink(){const until=new Date(Date.now()+30*60000);const x={token:"FISC-"+Math.random().toString(36).slice(2,10).toUpperCase(),until:until.toISOString()};S.fiscalLinks.push(x);save();audit("GERAR_LINK_FISCAL","Fiscalização",x.token,`Validade ${until.toLocaleString("pt-BR")}`);go("fiscal");modal("Link temporário gerado",`Token: <b>${x.token}</b><br>Validade: ${until.toLocaleString("pt-BR")}<br><br>Na versão de produção, o token será gerado pelo backend e poderá ser revogado a qualquer momento.`)}
