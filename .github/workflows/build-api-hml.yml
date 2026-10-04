@@ -1,10 +1,7 @@
-name: Build API HML
+name: Criar API HML
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - principal
 
 permissions:
   contents: read
@@ -18,6 +15,15 @@ jobs:
       - name: Baixar código
         uses: actions/checkout@v4
 
+      - name: Conferir estrutura do projeto
+        run: |
+          echo "Diretório atual:"
+          pwd
+          echo "Arquivos:"
+          ls -la
+          echo "Estrutura:"
+          find . -maxdepth 3 -type f | sort
+
       - name: Login no GHCR
         uses: docker/login-action@v3
         with:
@@ -28,7 +34,7 @@ jobs:
       - name: Construir e publicar API HML
         uses: docker/build-push-action@v6
         with:
-          context: ./API
+          context: .
           file: ./API/Dockerfile
           push: true
           tags: ghcr.io/madsonpersonal-max/cabana-gestao-api:hml
