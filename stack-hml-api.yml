@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cabana_gestao_hml
+      POSTGRES_USER: cabana
+      POSTGRES_PASSWORD_FILE: /run/secrets/dp_cabana_hml_db_password
+    secrets:
+      - dp_cabana_hml_db_password
+    volumes:
+      - dp_cabana_hml_db:/var/lib/postgresql/data
+    networks:
+      - dp_cabana_hml_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cabana -d cabana_gestao_hml"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  api:
+    image: ghcr.io/madsonpersonal-max/cabana-gestao-api:hml
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: cabana_gestao_hml
+      DB_USER: cabana
+      DB_PASSWORD_FILE: /run/secrets/dp_cabana_hml_db_password
+      JWT_SECRET_FILE: /run/secrets/dp_cabana_hml_jwt_secret
+      ADMIN_PASSWORD_FILE: /run/secrets/dp_cabana_hml_admin_password
+      JWT_EXPIRES_HOURS: "8"
+    secrets:
+      - dp_cabana_hml_db_password
+      - dp_cabana_hml_jwt_secret
+      - dp_cabana_hml_admin_password
+    networks:
+      - dp_cabana_hml_internal
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/ready', timeout=3)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  dp_cabana_hml_db:
+    external: true
+    name: dp-cabana-hml_dp_cabana_hml_db
+
+networks:
+  dp_cabana_hml_internal:
+    external: true
+    name: dp-cabana-hml_dp_cabana_hml_internal
+
+secrets:
+  dp_cabana_hml_db_password:
+    external: true
+  dp_cabana_hml_jwt_secret:
+    external: true
+  dp_cabana_hml_admin_password:
+    external: true
