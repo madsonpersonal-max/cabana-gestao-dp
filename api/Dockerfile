@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY api/requisitos.txt ./requirements.txt
+COPY api/requirements.txt ./requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
