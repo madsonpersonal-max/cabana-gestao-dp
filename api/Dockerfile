@@ -5,11 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY API/requisitos.txt ./requirements.txt
+COPY api/requisitos.txt ./requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY API/aplicativo ./aplicativo
+COPY api/aplicativo ./aplicativo
 
 EXPOSE 8000
 
