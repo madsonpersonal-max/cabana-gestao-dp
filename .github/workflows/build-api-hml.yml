@@ -1,5 +1,5 @@
 
-name: Criar API HML
+name: Build API HML
 
 on:
   workflow_dispatch:
@@ -11,28 +11,18 @@ permissions:
 jobs:
   build-api:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Baixar código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Conferir estrutura do projeto
-        run: |
-          echo "Diretório atual:"
-          pwd
-          echo "Arquivos:"
-          ls -la
-          echo "Estrutura:"
-          find . -maxdepth 3 -type f | sort
-
-      - name: Login no GHCR
+      - name: Login GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Construir e publicar API HML
+      - name: Build and push API
         uses: docker/build-push-action@v6
         with:
           context: .
