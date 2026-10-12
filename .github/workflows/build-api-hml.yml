@@ -37,4 +37,6 @@ jobs:
           context: .
           file: ./api/Dockerfile
           push: true
-          tags: ghcr.io/madsonpersonal-max/cabana-gestao-api:hml
+         tags: |
+           ghcr.io/madsonpersonal-max/cabana-gestao-api:hml
+           ghcr.io/madsonpersonal-max/cabana-gestao-api:hml-security-2
