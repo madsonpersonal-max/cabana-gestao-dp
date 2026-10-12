@@ -11,15 +11,35 @@ from urllib.parse import quote
 import jwt
 import psycopg
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
-APP_VERSION = "3.0.0-hml-api-1"
+APP_VERSION = "3.0.0-hml-api-2-security"
 
 app = FastAPI(
     title="Cabana Gestão API",
     version=APP_VERSION
+)
+
+# Origins autorizadas devem ser configuradas no serviço da API.
+# Não use "*" em produção nem habilite credenciais para origens públicas genéricas.
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "https://madsonpersonal-max.github.io"
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=600,
 )
 
 security = HTTPBearer(auto_error=False)
@@ -177,6 +197,9 @@ def ensure_admin():
 @app.on_event("startup")
 def startup():
 
+    if not JWT_SECRET or len(JWT_SECRET) < 32:
+        raise RuntimeError("JWT_SECRET ausente ou muito curta; configure um segredo forte de pelo menos 32 caracteres")
+
     with conn() as c:
         c.execute("select 1")
 
@@ -284,33 +307,61 @@ def login(item: LoginIn):
 
 
 def current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(
-        security
-    )
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-
     if not credentials:
-
         raise HTTPException(
-            status_code=401,
-            detail="Autenticação obrigatória"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Autenticação obrigatória",
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
     try:
-
-        return jwt.decode(
+        payload = jwt.decode(
             credentials.credentials,
             JWT_SECRET,
             algorithms=[JWT_ALGORITHM]
         )
-
     except jwt.PyJWTError:
-
         raise HTTPException(
-            status_code=401,
-            detail="Token inválido ou expirado"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido ou expirado",
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
+    # Revalida o usuário no banco em cada requisição protegida.
+    # Assim, desativação e mudança de perfil passam a valer imediatamente.
+    with conn() as c:
+        row = c.execute(
+            "select id, username, role, active from users where id=%s",
+            (payload.get("sub"),)
+        ).fetchone()
+
+    if not row or not row["active"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário inexistente ou inativo",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    payload["username"] = row["username"]
+    payload["role"] = row["role"]
+    payload["sub"] = str(row["id"])
+    return payload
+
+
+def require_roles(*allowed_roles: str):
+    allowed = {role.upper() for role in allowed_roles}
+
+    def role_dependency(user=Depends(current_user)):
+        if str(user.get("role", "")).upper() not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Seu perfil não tem permissão para esta operação"
+            )
+        return user
+
+    return role_dependency
 
 @app.get("/api/me")
 def me(user=Depends(current_user)):
@@ -348,7 +399,7 @@ def me(user=Depends(current_user)):
 def employees(
     q: Optional[str] = None,
     status: Optional[str] = None,
-    user=Depends(current_user)
+    user=Depends(require_roles("DP", "GERENCIA", "ADMIN"))
 ):
 
     sql = """
@@ -418,7 +469,7 @@ def employees(
 @app.get("/api/employees/{employee_id}")
 def employee(
     employee_id: str,
-    user=Depends(current_user)
+    user=Depends(require_roles("DP", "GERENCIA", "ADMIN"))
 ):
 
     with conn() as c:
@@ -556,7 +607,7 @@ class EmployeeIn(BaseModel):
 @app.post("/api/employees")
 def create_employee(
     item: EmployeeIn,
-    user=Depends(current_user)
+    user=Depends(require_roles("DP", "ADMIN"))
 ):
 
     with conn() as c:
@@ -654,7 +705,7 @@ def create_employee(
 
 @app.get("/api/closures")
 def closures(
-    user=Depends(current_user)
+    user=Depends(require_roles("DP", "FINANCEIRO", "GERENCIA", "ADMIN"))
 ):
 
     with conn() as c:
@@ -679,7 +730,7 @@ def closures(
 @app.get("/api/audit")
 def audit(
     limit: int = 200,
-    user=Depends(current_user)
+    user=Depends(require_roles("GERENCIA", "ADMIN"))
 ):
 
     limit = max(
